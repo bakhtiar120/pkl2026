@@ -1,0 +1,201 @@
+/*!
+ * author : Bakhtiar, Uca , Syam
+ */
+
+ /* breadcrumb */
+ .breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    /* padding: 0.75rem 1rem; */
+    /* margin-bottom: 1rem; */
+    list-style: none;
+    background-color: transparent;
+    border-radius: 0.35rem;
+  }
+  
+  .breadcrumb-item + .breadcrumb-item {
+    padding-left: 0.5rem;
+  }
+  
+  .breadcrumb-item + .breadcrumb-item::before {
+    float: left;
+    padding-right: 0.5rem;
+    color: #858796;
+    content: ">";
+  }
+  
+  .breadcrumb-item + .breadcrumb-item:hover::before {
+    text-decoration: underline;
+    color: #00a2b9;
+  }
+  
+  .breadcrumb-item + .breadcrumb-item:hover::before {
+    text-decoration: none;
+  }
+  
+  .breadcrumb-item.active {
+    color: #858796;
+  }
+
+  .border-left-new{
+    border-left: 0.25rem solid #00a2b9 !important;
+  }
+
+  /* table */
+  .table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #5a5c69!important;
+  }
+  
+  .table thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #e3e6f0;
+    border-top: 0px;
+  }
+
+  .table th,
+  .table td {
+    vertical-align: middle !important;
+  }
+
+  .table td {
+    font-weight: 600;
+    vertical-align: middle !important;
+  }
+
+  .table-hover tbody tr:hover {
+    color: #5a5c69!important;
+    background-color: #f8f5ff;
+  }
+
+  /* card shadow */
+  .shadow-new {
+    /* box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px !important; */
+    /* box-shadow: rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px !important; */
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 4px 12px !important;
+  }
+
+  /* pill-badge */
+  .badge-new {
+    color: #00a2b9;
+    background-color: #E7E5FF;
+    /* background-color: #D8D9EE; */
+  }
+
+  .bg-gradient-primary {
+    background-color: #00a2b9 !important;
+    background-image: linear-gradient(180deg, #00617B 10%, #00809A 100%) !important;
+    background-size: cover;
+  }
+
+  .text-new {
+    color: #00a2b9 !important;
+  }
+
+  /* button outline new */
+  .btn-outline-new {
+    color: #00a2b9;
+    border-color: #00a2b9;
+  }
+  
+  .btn-outline-new:hover {
+    color: #fff;
+    background-color: #00809A;
+    border-color: #00809A;
+  }
+  
+  .btn-outline-new:focus, .btn-outline-new.focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 97, 123, 0.5);
+  }
+  
+  .btn-outline-new.disabled, .btn-outline-new:disabled {
+    color: #9E9E9E;
+    background-color: transparent;
+    border-color: #9E9E9E;
+  }
+  
+  .btn-outline-new:not(:disabled):not(.disabled):active, .btn-outline-new:not(:disabled):not(.disabled).active,
+  .show > .btn-outline-new.dropdown-toggle {
+    color: #fff;
+    background-color: #00a2b9;
+    border-color: #00a2b9;
+  }
+  
+  .btn-outline-new:not(:disabled):not(.disabled):active:focus, .btn-outline-new:not(:disabled):not(.disabled).active:focus,
+  .show > .btn-outline-new.dropdown-toggle:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 97, 123, 0.5);
+  }
+
+  /* btn new */
+  .btn-new {
+    color: #fff;
+    background-color: #00a2b9;
+    border-color: #00a2b9;
+  }
+  
+  .btn-new:hover {
+    color: #fff;
+    background-color: #00809A;
+    border-color: #00809A;
+  }
+  
+  .btn-new:focus, .btn-new.focus {
+    color: #fff;
+    background-color: #00617B;
+    border-color: #00617B;
+    box-shadow: 0 0 0 0.2rem rgba(0, 97, 123, 0.5);
+  }
+  
+  .btn-new.disabled, .btn-new:disabled {
+    color: #9E9E9E !important;
+    background-color: #EDEDED;
+    border-color: #E0E0E0;
+  }
+
+  .btn-new:not(:disabled):not(.disabled):active, .btn-new:not(:disabled):not(.disabled).active,
+  .show > .btn-new.dropdown-toggle {
+    color: #fff;
+    background-color: #00809A;
+    border-color: #00809A;
+  }
+  
+  .btn-new:not(:disabled):not(.disabled):active:focus, .btn-new:not(:disabled):not(.disabled).active:focus,
+  .show > .btn-new.dropdown-toggle:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 97, 123, 0.5);
+  }
+
+  .page-item.active .page-link {
+    z-index: 3;
+    color: #fff;
+    background-color: #00A2B9;
+    border-color: #00A2B9;
+  }
+
+  .page-link {
+    color: #00A2B9;
+  }
+
+  .page-link:hover {
+    color: #00809A;
+  }
+
+  a {
+    color: #00809A;
+    text-decoration: none;
+  }
+  
+  a:hover {
+    color: #00617B;
+    text-decoration: none;
+  }
+
+  .sidebar .nav-item .collapse .collapse-inner .collapse-item.active, .sidebar .nav-item .collapsing .collapse-inner .collapse-item.active {
+    color: #00A2B9;
+    font-weight: 700;
+  }
+
+  a.dropdown-item:hover {
+    background-color: #00A2B9;
+    color: #fff;
+  }
