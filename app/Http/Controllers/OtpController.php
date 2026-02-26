@@ -40,6 +40,7 @@ public function show()
 
     public function verify(Request $request)
 {
+   $otpData = EmailOtp::where('user_id', session('2fa:user_id'))->first();
     $request->validate(['otp' => 'required|digits:6']);
     if ($otpData->blocked_until && now()->lt($otpData->blocked_until)) {
     $remaining = now()->diffInMinutes($otpData->blocked_until) + 1;
@@ -49,7 +50,7 @@ public function show()
     ]);
 }
 
-    $otpData = EmailOtp::where('user_id', session('2fa:user_id'))->first();
+    
 
     if (!$otpData || now()->gt($otpData->expires_at)) {
         return back()->withErrors(['otp' => 'OTP expired']);
