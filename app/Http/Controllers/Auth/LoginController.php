@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use App\Models\EmailOtp;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail as Mail;
+use Illuminate\Mail\Mailable;
+use App\Mail\OtpEmail;
 
 class LoginController extends Controller
 {
@@ -74,6 +77,11 @@ Log::debug('OTP generated', [
     'otp' => $otp,
     'user_id' => $user->id,
 ]);
+ $details = [
+            'otp' => $otp
+        ];
+ Mail::to($user->email, $user->email)
+            ->send(new OtpEmail($details));
 
 
     EmailOtp::updateOrCreate(
