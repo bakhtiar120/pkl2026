@@ -108,7 +108,7 @@
                         <div class="col-md-12 p-2">
                             <p class="h4"><b>Verify OTP</b></p>
                             <p class="belum-punya" style="color: #757575;font-size: 14px !important;">
-                                Masukan 6 kode OTP yang telah dikirim ke email <b>email@tester.com</b>
+                                Masukkan 6 kode OTP yang telah dikirim ke email <b>{{ $email }}</b>
                             </p>
                         </div>
 
@@ -224,7 +224,8 @@
         </div>
         <div class="container footer-bottom clearfix">
             <div class="float-start">
-                <h5>Copyright © 2025 PT PLN Indonesia Power UBP Kamojang. All rights reserved.Version 5.0.0</h5>
+                <h5>Copyright © {{ date('Y') }} PT PLN Indonesia Power UBP Kamojang. All rights reserved.Version
+                    5.0.0</h5>
             </div>
             <div class="float-end">
                 <h5>Version 5.0.0</h5>

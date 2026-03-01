@@ -49,28 +49,37 @@ class AdminController extends Controller
 
         return view('dashboards.admins.page.home');
     }
-    function pendaftaran_berjalan()
-    {
-        $periodes = DB::select("SELECT DISTINCT pe.tgl_mulai_pendaftaran as tgl_mulai_pendaftaran, pe.tgl_selesai_pendaftaran as tgl_selesai_pendaftaran, pe.tgl_mulai_pelaksanaan as tgl_mulai_pelaksanaan, pe.tgl_selesai_pelaksanaan as tgl_selesai_pelaksanaan,pe.id as id FROM periode pe, kuota_pendaftaran kp WHERE pe.id=kp.id_periode AND pe.tgl_selesai_pendaftaran>=CURDATE() ORDER BY pe.tgl_mulai_pendaftaran DESC");
+   public function pendaftaran_berjalan()
+{
+    $periodes = DB::table('periode as pe')
+        ->join('kuota_pendaftaran as kp', 'pe.id', '=', 'kp.id_periode')
+        ->leftJoin('pendaftaran as p', function ($join) {
+            $join->on('kp.id', '=', 'p.id_kuota')
+                 ->where('p.status_pendaftaran', 'Lolos');
+        })
+        // ->leftJoin('unit_bidangs as u', 'p.id_unit_kerja', '=', 'u.id')
+        ->where('pe.tgl_selesai_pendaftaran', '>=', now()->toDateString())
+        ->groupBy(
+            'pe.id',
+            'pe.tgl_mulai_pendaftaran',
+            'pe.tgl_selesai_pendaftaran',
+            'pe.tgl_mulai_pelaksanaan',
+            'pe.tgl_selesai_pelaksanaan'
+        )
+        ->select(
+            'pe.id',
+            'pe.tgl_mulai_pendaftaran',
+            'pe.tgl_selesai_pendaftaran',
+            'pe.tgl_mulai_pelaksanaan',
+            'pe.tgl_selesai_pelaksanaan',
+            DB::raw('COUNT(p.id) as jumlah_lolos'),
+            DB::raw('SUM(kp.jumlah_kuota) as jumlah_kuota'),
+        )
+        ->orderBy('pe.tgl_mulai_pendaftaran', 'desc')
+        ->get();
 
-        // $periodes = Periode::join('kuota_pendaftaran', 'periode.id', '=', 'kuota_pendaftaran.id_periode')
-        //     ->where('periode.tgl_selesai_pendaftaran', '>=', Carbon::today()->toDateString())->get();
-
-        // $periodes = Periode::join('kuota_pendaftaran', 'periode.id', '=', 'kuota_pendaftaran.id_periode')
-        //     ->get(['periode.tgl_mulai_pendaftaran', 'SUM(kuota_pendaftaran.jumlah_kuota)', 'program_studi.id']);
-        foreach ($periodes as $periode) {
-            $kuotas = KuotaPendaftaran::where('id_periode', $periode->id)
-                ->get();
-            $jumlah = 0;
-            foreach ($kuotas as $kuota) {
-                $jumlah = $jumlah + Pendaftaran::where('id_kuota', $kuota->id)->where('status_pendaftaran', 'Lolos')->count();
-            }
-            $periode->jumlah_lolos = $jumlah;
-            $periode->jumlah_kuota = KuotaPendaftaran::where('id_periode', $periode->id)
-                ->sum('jumlah_kuota');
-        }
-        return view('dashboards.admins.page.pendaftaran', compact('periodes'));
-    }
+    return view('dashboards.admins.page.pendaftaran', compact('periodes'));
+}
     function tugas_peserta()
     {
         // $periodes = Periode::latest()->get();
@@ -89,29 +98,37 @@ class AdminController extends Controller
         }
         return view('dashboards.admins.page.tugas_peserta', compact('periodes'));
     }
-    function pendaftaran_selesai()
-    {
-        $periodes = Periode::join('kuota_pendaftaran', 'periode.id', '=', 'kuota_pendaftaran.id_periode')
+   public function pendaftaran_selesai()
+{
+    $periodes = DB::table('periode as pe')
+        ->join('kuota_pendaftaran as kp', 'pe.id', '=', 'kp.id_periode')
+        ->leftJoin('pendaftaran as p', function ($join) {
+            $join->on('kp.id', '=', 'p.id_kuota')
+                 ->where('p.status_pendaftaran', 'Lolos');
+        })
+        ->leftJoin('unit_bidangs as u', 'p.id_unit_kerja', '=', 'u.id')
+        ->where('pe.tgl_selesai_pendaftaran', '<=', now()->toDateString())
+        ->groupBy(
+            'pe.id',
+            'pe.tgl_mulai_pendaftaran',
+            'pe.tgl_selesai_pendaftaran',
+            'pe.tgl_mulai_pelaksanaan',
+            'pe.tgl_selesai_pelaksanaan'
+        )
+        ->select(
+            'pe.id',
+            'pe.tgl_mulai_pendaftaran',
+            'pe.tgl_selesai_pendaftaran',
+            'pe.tgl_mulai_pelaksanaan',
+            'pe.tgl_selesai_pelaksanaan',
+            DB::raw('COUNT(p.id) as jumlah_lolos'),
+            DB::raw('SUM(kp.jumlah_kuota) as jumlah_kuota')
+        )
+        ->orderBy('pe.tgl_mulai_pendaftaran', 'DESC')
+        ->get();
 
-            ->where('periode.tgl_selesai_pendaftaran', '<=', Carbon::today())
-            ->select('periode.tgl_mulai_pendaftaran', 'periode.tgl_selesai_pendaftaran', 'periode.tgl_mulai_pelaksanaan', 'periode.tgl_selesai_pelaksanaan', 'periode.id AS id')->distinct()
-            ->orderBy('periode.tgl_mulai_pendaftaran', 'DESC')
-            ->get();
-
-        foreach ($periodes as $periode) {
-            $kuotas = KuotaPendaftaran::where('id_periode', $periode->id)
-                ->get();
-            $jumlah = 0;
-            foreach ($kuotas as $kuota) {
-                $jumlah = $jumlah + Pendaftaran::where('id_kuota', $kuota->id)->where('status_pendaftaran', 'Lolos')->count();
-            }
-            $periode->jumlah_lolos = $jumlah;
-            $periode->jumlah_kuota = KuotaPendaftaran::where('id_periode', $periode->id)
-                ->sum('jumlah_kuota');
-        }
-        // var_dump($periodes);
-        return view('dashboards.admins.page.pendaftaran_selesai', compact('periodes'));
-    }
+    return view('dashboards.admins.page.pendaftaran_selesai', compact('periodes'));
+}
     function nilai_peserta()
     {
         // $periodes = DB::select("SELECT DISTINCT pe.tgl_mulai_pendaftaran as tgl_mulai_pendaftaran, pe.tgl_selesai_pendaftaran as tgl_selesai_pendaftaran, pe.tgl_mulai_pelaksanaan as tgl_mulai_pelaksanaan, pe.tgl_selesai_pelaksanaan as tgl_selesai_pelaksanaan,pe.id as id FROM periode pe, kuota_pendaftaran kp WHERE pe.id=kp.id_periode AND pe.tgl_selesai_pendaftaran<=CURDATE()");

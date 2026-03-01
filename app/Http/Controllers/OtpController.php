@@ -23,10 +23,13 @@ public function show()
     if (!session()->has('2fa:user_id')) {
         return redirect('/login');
     }
+ $userId = session('2fa:user_id');
 
+    $user = User::find($userId);
     $otpData = EmailOtp::where('user_id', session('2fa:user_id'))->first();
 
     return view('auth.verify-otp', [
+        'email' => $user?->email, // ← kirim email ke blade
         'otpData' => $otpData,
         'cooldown' => $otpData
             ? max(0, self::RESEND_COOLDOWN - now()->diffInSeconds($otpData->last_sent_at))

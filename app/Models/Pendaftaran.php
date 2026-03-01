@@ -31,4 +31,9 @@ class Pendaftaran extends Model
     {
         return $this->hasOne(ProfilMember::class);
     }
+
+    public function unitKerja()
+    {
+        return $this->belongsTo(UnitBidang::class, 'id_unit_kerja');
+    }
 }
