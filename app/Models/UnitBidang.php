@@ -12,4 +12,8 @@ class UnitBidang extends Model
     protected $fillable = [
         'name',
     ];
+    public function pendaftarans()
+{
+    return $this->hasMany(Pendaftaran::class, 'id_unit_kerja');
+}
 }
