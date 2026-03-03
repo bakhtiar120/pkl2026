@@ -12,8 +12,18 @@ class UnitBidang extends Model
     protected $fillable = [
         'name',
     ];
-    public function pendaftarans()
-{
-    return $this->hasMany(Pendaftaran::class, 'id_unit_kerja');
-}
+     public function kuota()
+    {
+        return $this->hasMany(KuotaPendaftaran::class, 'id_unit_bidang');
+    }
+
+    public function periode()
+    {
+        return $this->belongsToMany(
+            Periode::class,
+            'kuota_pendaftaran',
+            'id_unit_bidang',
+            'id_periode'
+        )->withPivot('id_bidang', 'jumlah_kuota');
+    }
 }
