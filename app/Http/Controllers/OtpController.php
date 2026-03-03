@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\EmailOtp;
+use Illuminate\Support\Facades\Mail as Mail;
+use Illuminate\Mail\Mailable;
+use App\Mail\OtpEmail;
 // use App\Mail\OtpMail;
 
 class OtpController extends Controller
@@ -159,6 +161,12 @@ public function show()
         'last_sent_at' => now(),
         'resend_count' => $otpData->resend_count + 1,
     ]);
+    $details = [
+            'otp' => $otp
+        ];
+    $user = User::findOrFail($otpData->user_id);
+    Mail::to($user->email, $user->email)
+            ->send(new OtpEmail($details));
 
     session([
         'otp_resend_available_at' => now()->addSeconds(self::RESEND_COOLDOWN)

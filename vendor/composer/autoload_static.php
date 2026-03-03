@@ -619,6 +619,7 @@ class ComposerStaticInit6fbc75e480e17d5f6a91a77b6598a43a
         'App\\Http\\Middleware\\isAdminMiddleware' => __DIR__ . '/../..' . '/app/Http/Middleware/isAdminMiddleware.php',
         'App\\Http\\Middleware\\isMentorMiddleware' => __DIR__ . '/../..' . '/app/Http/Middleware/isMentorMiddleware.php',
         'App\\Http\\Middleware\\isUserMiddleware' => __DIR__ . '/../..' . '/app/Http/Middleware/isUserMiddleware.php',
+        'App\\Mail\\OtpEmail' => __DIR__ . '/../..' . '/app/Mail/OtpEmail.php',
         'App\\Mail\\PklEmail' => __DIR__ . '/../..' . '/app/Mail/PklEmail.php',
         'App\\Mail\\ResetPasswordMail' => __DIR__ . '/../..' . '/app/Mail/ResetPasswordMail.php',
         'App\\Models\\Artikel' => __DIR__ . '/../..' . '/app/Models/Artikel.php',
