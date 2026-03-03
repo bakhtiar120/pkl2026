@@ -53,6 +53,7 @@ return array(
     'App\\Http\\Middleware\\isAdminMiddleware' => $baseDir . '/app/Http/Middleware/isAdminMiddleware.php',
     'App\\Http\\Middleware\\isMentorMiddleware' => $baseDir . '/app/Http/Middleware/isMentorMiddleware.php',
     'App\\Http\\Middleware\\isUserMiddleware' => $baseDir . '/app/Http/Middleware/isUserMiddleware.php',
+    'App\\Mail\\OtpEmail' => $baseDir . '/app/Mail/OtpEmail.php',
     'App\\Mail\\PklEmail' => $baseDir . '/app/Mail/PklEmail.php',
     'App\\Mail\\ResetPasswordMail' => $baseDir . '/app/Mail/ResetPasswordMail.php',
     'App\\Models\\Artikel' => $baseDir . '/app/Models/Artikel.php',

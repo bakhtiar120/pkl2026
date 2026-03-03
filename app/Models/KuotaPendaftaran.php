@@ -15,6 +15,7 @@ class KuotaPendaftaran extends Model
 
     protected $fillable = [
         'id_bidang',
+        'id_unit_bidang',
         'id_periode',
         'jumlah_kuota'
     ];
@@ -26,6 +27,10 @@ class KuotaPendaftaran extends Model
         return $this->hasMany(Periode::class);
     }
 
+     public function unitBidang()
+    {
+        return $this->belongsTo(UnitBidang::class, 'id_unit_bidang');
+    }
     public function bidang()
     {
         return $this->hasMany(Bidang::class);
