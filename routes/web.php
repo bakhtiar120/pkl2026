@@ -269,9 +269,16 @@ Route::group(['prefix' => 'mentor', 'middleware' => ['auth', 'otp','isMentor', '
         Route::get('/chart', [HomeController::class, 'chart']);
     });
 });
+Route::middleware('auth')->group(function () {
 
-Route::get('/verify-otp', [OtpController::class, 'show'])->name('otp.form');
-Route::post('/verify-otp', [OtpController::class, 'verify'])->name('otp.verify');
-Route::post('/resend-otp', [OtpController::class, 'resend'])
-    ->name('otp.resend')
-    ->middleware('throttle:3,1'); // max 3x per menit
+    Route::get('/verify-otp', [OtpController::class,'show'])
+        ->name('otp.form');
+
+    Route::post('/verify-otp', [OtpController::class,'verify'])
+        ->name('otp.verify');
+
+    Route::post('/resend-otp', [OtpController::class,'resend'])
+        ->name('otp.resend')
+        ->middleware('throttle:3,1');
+
+});
