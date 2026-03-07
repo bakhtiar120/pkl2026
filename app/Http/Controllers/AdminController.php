@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Auth;
 use App\Models\User;
 use App\Models\Bidang;
+use App\Models\UnitBidang;
 use App\Models\Periode;
 use App\Models\KuotaPendaftaran;
 use App\Models\Pendaftaran;
@@ -149,7 +150,8 @@ class AdminController extends Controller
     function buat_pendaftaran()
     {
         $bidangs = Bidang::latest()->get();
-        return view('dashboards.admins.page.buat_pendaftaran', compact('bidangs'));
+         $unit_bidangs = UnitBidang::latest()->get();
+        return view('dashboards.admins.page.buat_pendaftaran', compact('bidangs','unit_bidangs'));
     }
     function edit_kuota_pendaftaran($id)
     {

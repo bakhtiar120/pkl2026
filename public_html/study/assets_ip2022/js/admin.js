@@ -917,3 +917,83 @@ function deletePost(post_id) {
         });
     }
 }
+
+
+let unitIndex = 0;
+const container = document.getElementById('unit-container');
+const template = document.querySelector('#unit-template .unit-card');
+
+function updateOptions() {
+
+    const selected = [...document.querySelectorAll('.unit-select')]
+        .map(s => s.value)
+        .filter(v => v !== '');
+
+    document.querySelectorAll('.unit-select').forEach(select => {
+
+        const current = select.value;
+
+        select.querySelectorAll('option').forEach(opt => {
+
+            if (opt.value === '') return;
+
+            opt.disabled = selected.includes(opt.value) && opt.value !== current;
+
+        });
+
+    });
+
+}
+
+function addUnit() {
+
+    const clone = template.cloneNode(true);
+
+    clone.querySelectorAll('.kuota-input').forEach((input, i) => {
+
+        const bidangId = clone.querySelectorAll('.id-bidang')[i].value;
+
+        input.name = `data_unit[${unitIndex}][bidang][${i}][kuota_bidang]`;
+
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = `data_unit[${unitIndex}][bidang][${i}][id_bidang]`;
+        hidden.value = bidangId;
+
+        input.after(hidden);
+
+    });
+
+    clone.querySelector('.unit-select').name = `data_unit[${unitIndex}][id_unit_bidang]`;
+
+    container.appendChild(clone);
+
+    unitIndex++;
+
+    updateOptions();
+
+}
+
+document.getElementById('add-unit').addEventListener('click', addUnit);
+
+document.addEventListener('change', e => {
+
+    if (e.target.classList.contains('unit-select')) {
+        updateOptions();
+    }
+
+});
+
+document.addEventListener('click', e => {
+
+    if (e.target.classList.contains('remove-unit')) {
+
+        e.target.closest('.unit-card').remove();
+
+        updateOptions();
+
+    }
+
+});
+
+addUnit();
