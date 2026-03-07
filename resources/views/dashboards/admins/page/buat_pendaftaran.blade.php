@@ -99,6 +99,9 @@
                                         <button type="button" class="btn btn-danger btn-sm mt-2 remove-unit">
                                             Hapus Unit
                                         </button>
+                                        <div class="mt-2 text-end">
+                                            <strong>Total Kuota: <span class="total-kuota">0</span></strong>
+                                        </div>
 
                                     </div>
                                 </div>
