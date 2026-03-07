@@ -22,56 +22,44 @@ class OtpController extends Controller
     const BLOCK_MINUTES = 10;
 public function show()
 {
-    if (!session()->has('2fa:user_id')) {
-        return redirect('/login');
+    $user = auth()->user();
+
+    $otpData = EmailOtp::where('user_id',$user->id)->first();
+    $cooldown = 0;
+
+    if ($otpData && $otpData->last_sent_at) {
+        $cooldown = max(0, 60 - now()->diffInSeconds($otpData->last_sent_at));
     }
- $userId = session('2fa:user_id');
-
-    $user = User::find($userId);
-    $otpData = EmailOtp::where('user_id', session('2fa:user_id'))->first();
-
-    return view('auth.verify-otp', [
-        'email' => $user?->email, // ← kirim email ke blade
-        'otpData' => $otpData,
-        'cooldown' => $otpData
-            ? max(0, self::RESEND_COOLDOWN - now()->diffInSeconds($otpData->last_sent_at))
-            : 0,
-        'isBlocked' => $otpData && $otpData->blocked_until && now()->lt($otpData->blocked_until),
+    return view('auth.verify-otp',[
+        'email'=>$user->email,
+        'otpData'=>$otpData,
+        'cooldown' => $cooldown
     ]);
 }
 
-
-    
-
-    public function verify(Request $request)
+public function verify(Request $request)
 {
-   $otpData = EmailOtp::where('user_id', session('2fa:user_id'))->first();
-    $request->validate(['otp' => 'required|digits:6']);
-    if ($otpData->blocked_until && now()->lt($otpData->blocked_until)) {
-    $remaining = now()->diffInMinutes($otpData->blocked_until) + 1;
-
-    return back()->withErrors([
-        'otp' => "Your account is temporarily blocked. Try again in {$remaining} minutes."
+    $request->validate([
+        'otp' => 'required|digits:6'
     ]);
-}
 
-    
+    $user = auth()->user();
 
-    if (!$otpData || now()->gt($otpData->expires_at)) {
-        return back()->withErrors(['otp' => 'OTP expired']);
-    }
+    $otpData = EmailOtp::where('user_id', $user->id)->first();
 
-    if ($otpData->attempts >= self::MAX_ATTEMPTS) {
-        Auth::logout();
-        session()->forget('2fa:user_id');
-        $otpData->delete();
-
-        return redirect('/login')->withErrors([
-            'email' => 'Too many OTP attempts, please login again.'
+    if(!$otpData){
+        return back()->withErrors([
+            'otp' => 'OTP not found'
         ]);
     }
 
-    if (!Hash::check($request->otp, $otpData->otp)) {
+    if(now()->gt($otpData->expires_at)){
+        return back()->withErrors([
+            'otp' => 'OTP expired'
+        ]);
+    }
+
+    if(!Hash::check($request->otp, $otpData->otp)){
         $otpData->increment('attempts');
 
         return back()->withErrors([
@@ -79,39 +67,26 @@ public function show()
         ]);
     }
 
-    // ===== SUCCESS =====
-    $user = User::findOrFail(session('2fa:user_id'));
+    // SUCCESS
+    $user->is_2fa_verified = true;
+$user->save();
+    $user->refresh();
+    // dd($user->is_2fa_verified);
 
-    $user->update([
-        'is_2fa_verified' => true
-    ]);
-
-    // Bersihkan OTP & cooldown
     $otpData->delete();
-
-    session()->forget([
-        '2fa:user_id',
-        'otp_resend_available_at'
-    ]);
-
-    // Regenerate session (security)
-    $request->session()->regenerate();
-
-    Auth::login($user);
-
-    // Redirect by role
+Auth::login($user);
     return match ($user->role) {
         1 => redirect()->route('admin.dashboard'),
         2 => redirect()->route('user.dashboard'),
         3 => redirect()->route('mentor.dashboard'),
-        default => redirect('/'),
+        default => redirect('/')
     };
 }
 
 
   public function resend()
 {
-    $otpData = EmailOtp::where('user_id', session('2fa:user_id'))->firstOrFail();
+    $otpData = EmailOtp::where('user_id', auth()->id())->first();
 
     // 0. Cek apakah sedang diblokir
     if ($otpData->blocked_until && now()->lt($otpData->blocked_until)) {

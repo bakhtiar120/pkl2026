@@ -39,10 +39,10 @@ class LoginController extends Controller
           if( Auth()->user()->role == 1){
               return route('admin.dashboard');
           }
-          if( Auth()->user() == 2){
+          if( Auth()->user()->role == 2){
               return route('user.dashboard');
           }
-          elseif( Auth()->user() == 3){
+          elseif( Auth()->user()->role == 3){
             return route('mentor.dashboard');
         }
       }
@@ -58,48 +58,47 @@ class LoginController extends Controller
         $this->middleware('guest')->except('logout');
     }
 
-    public function login(Request $request){
-       $input = $request->all();
-       $this->validate($request,[
-           'email'=>'required|email',
-           'password'=>'required'
-       ]);
+    public function login(Request $request)
+{
+    $request->validate([
+        'email'=>'required|email',
+        'password'=>'required'
+    ]);
 
-        if (!auth()->attempt($request->only('email', 'password'))) {
-        return redirect()->route('login')
-            ->with('error', 'Email atau password salah');
+    if (!Auth::attempt($request->only('email','password'))) {
+        return back()->withErrors([
+            'email'=>'Email atau password salah'
+        ]);
     }
-    $user = auth()->user();
-      $user->update(['is_2fa_verified' => false]);
 
-    $otp = random_int(100000, 999999);
-Log::debug('OTP generated', [
-    'otp' => $otp,
-    'user_id' => $user->id,
-]);
- $details = [
-            'otp' => $otp
-        ];
- Mail::to($user->email, $user->email)
-            ->send(new OtpEmail($details));
+    $user = Auth::user();
 
+    // reset status OTP
+     $user->is_2fa_verified = false;
+$user->save();
 
-    EmailOtp::updateOrCreate(
-        ['user_id' => $user->id],
-        [
-            'otp' => Hash::make($otp),
-            'expires_at' => now()->addMinutes(5),
-            'resend_count' => 0,
-            'attempts' => 0,
-            'blocked_until' => null,
-            'last_sent_at' => now(),
-        ]
-    );
-    Auth::logout();
-    session(['2fa:user_id' => $user->id]);
+    $otp = random_int(100000,999999);
+
+   // simpan ke database dulu
+EmailOtp::updateOrCreate(
+    ['user_id'=>$user->id],
+    [
+        'otp'=>Hash::make($otp),
+        'expires_at'=>now()->addMinutes(5),
+        'attempts'=>0,
+        'resend_count'=>0,
+        'last_sent_at'=>now()
+    ]
+);
+Log::info('OTP SAVED', ['user_id'=>$user->id]);
+
+// baru kirim email
+Mail::to($user->email)->send(new OtpEmail([
+    'otp'=>$otp
+]));
 
     return redirect()->route('otp.form');
-    }
+}
     
 
 }

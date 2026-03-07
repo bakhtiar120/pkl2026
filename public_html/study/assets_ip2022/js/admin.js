@@ -997,3 +997,38 @@ document.addEventListener('click', e => {
 });
 
 addUnit();
+
+function updateTotalKuota(card) {
+
+    let total = 0;
+
+    card.querySelectorAll('.kuota-input').forEach(input => {
+        total += parseInt(input.value) || 0;
+    });
+
+    card.querySelector('.total-kuota').innerText = total;
+
+}
+
+document.addEventListener('input', e => {
+
+    if (e.target.classList.contains('kuota-input')) {
+
+        const card = e.target.closest('.unit-card');
+
+        updateTotalKuota(card);
+
+        if (parseInt(e.target.value) > 20) {
+            e.target.style.border = '2px solid red';
+        } else {
+            e.target.style.border = '';
+        }
+
+    }
+
+});
+
+const allUnits = document.querySelector('.unit-select').options.length - 1;
+const usedUnits = selected.length;
+
+document.getElementById('add-unit').disabled = usedUnits >= allUnits;
