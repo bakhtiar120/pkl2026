@@ -1,65 +1,188 @@
 @extends('dashboards.admins.index')
-  
-@section('content') 
-<div class="container-fluid">
 
-    <!-- breadcrumb -->
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb pl-0">
-          <li class="breadcrumb-item"><a href="/admin/pendaftaran_berjalan">Pendaftaran Berjalan</a></li>
-          <li class="breadcrumb-item active" aria-current="page">Edit Kuota Pendaftaran</li>
-        </ol>
-      </nav>
+@section('content')
+    <div class="container-fluid">
 
-    <!-- Page Heading -->
-    <h1 class="h3 mb-4 text-gray-800">Edit Kuota Pendaftaran</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb pl-0">
+                <li class="breadcrumb-item"><a href="/admin/pendaftaran_berjalan">Pendaftaran Berjalan</a></li>
+                <li class="breadcrumb-item active">Edit Kuota Pendaftaran</li>
+            </ol>
+        </nav>
 
-    <!-- Content Row -->
-    <div class="row">
-        <!-- Data Table -->
-        <div class="col-xl-12 col-md-12 mb-4">
-            <div class="card shadow-new">
-                <div class="card-body">
-                    <!-- form  -->
-                    <form>
-                    @csrf
-                    
-                    <div class="row">
-                        <div class="col-xl-3 col-md-3 col-sm-12">
-                            <label class="h6 font-weight-bold text-gray-500">Kuota tiap bidang</label>
-                        </div>
-                        <div class="col-xl-9 col-md-9 col-sm-12">
-                        <div class="alert alert-info text-center"><b>Wajib masukan nilai kuota. Apabila tidak dibuka pendaftaran pada suatu bidang, masukan nilai kuota nol (0)</b></div>
-                        <input type="hidden" name="inputperiode" id="inputperiode" value={{$id_periode}}>    
-                        <div class="form-row">
-                                @foreach ($bidangs as $bidang)
-                                <div class="form-group col-md-6">
-                                  <label for="inputBidang1">{{ $bidang->nama_bidang}}</label>
-                                  <input type="hidden" name="idbidang" id="idbidang" value={{$bidang->id_bidang}}>
-                                  <input type="number" class="form-control" id="inputBidang" name="inputBidang" value={{$bidang->jumlah_kuota}} placeholder="Belum masukan kuota!">
+        <h1 class="h3 mb-4 text-gray-800">Edit Kuota Pendaftaran</h1>
+
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card shadow-new">
+                    <div class="card-body">
+
+                        <form>
+                            @csrf
+
+                            <input type="hidden" id="inputperiode" value="{{ $id_periode }}">
+
+                            <div class="row">
+
+                                <!-- LEFT PANEL -->
+                                <div class="col-xl-3">
+
+                                    <label>Tambah Unit</label>
+
+                                    <select class="form-control" id="select-unit">
+                                        <option value="">-- Pilih Unit --</option>
+
+                                        @foreach ($unit_bidangs as $unit)
+                                            <option value="{{ $unit->id }}"
+                                                @if (isset($units[$unit->id])) disabled @endif>
+                                                {{ $unit->name }}
+                                            </option>
+                                        @endforeach
+
+                                    </select>
+
+                                    <ul class="nav flex-column nav-pills mt-3" id="unit-list">
+
+                                        @php $i=0; @endphp
+
+                                        @foreach ($units as $unitId => $data)
+                                            @php
+                                                $i++;
+                                                $unitName = $data[0]->nama_unit;
+                                            @endphp
+
+                                            <li class="nav-item">
+
+                                                <a class="nav-link {{ $i == 1 ? 'active' : '' }}" data-toggle="pill"
+                                                    href="#unit_{{ $i }}">
+
+                                                    <div class="d-flex justify-content-between w-100">
+
+                                                        <div>
+                                                            {{ $unitName }}
+                                                            <strong>(<span class="nav-total">
+                                                                    {{ collect($data)->sum('jumlah_kuota') }}
+                                                                </span>)</strong>
+                                                        </div>
+
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-outline-danger remove-unit">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+
+                                                    </div>
+
+                                                </a>
+
+                                            </li>
+                                        @endforeach
+
+                                    </ul>
+
+
                                 </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-xl-12 col-md-12 col-sm-12"><hr></div>
-                    </div>
-                    <div class="row">
-                        <div class="col-xl-12 col-md-12 col-sm-12">
-                            <span class="float-right">
-                                <a rel="nofollow" href="javascript:history.back()" class="text-danger mr-3">Batal</a>
-                                <button type="button" class="btn btn-new" id="update-kuota-pendaftaran">Update Kuota</button>
-                            </span>
-                        </div>
-                    </div>
-                    
-                    </form>
-                </div>
 
+                                <!-- RIGHT PANEL -->
+                                <div class="col-xl-9">
+
+                                    <div class="tab-content" id="unit-tab-content">
+
+                                        @php $i=0; @endphp
+
+                                        @foreach ($units as $unitId => $data)
+                                            @php $i++; @endphp
+
+                                            <div class="tab-pane fade {{ $i == 1 ? 'show active' : '' }}"
+                                                id="unit_{{ $i }}">
+
+                                                <input type="hidden" class="unit-id-input" value="{{ $unitId }}">
+
+                                                <div class="row bidang-wrapper">
+
+                                                    @foreach ($bidangs as $bidang)
+                                                        @php
+                                                            $kuota = collect($data)
+                                                                ->where('id_bidang', $bidang->id)
+                                                                ->first();
+                                                        @endphp
+
+                                                        <div class="col-md-6 mb-2">
+
+                                                            <label>{{ $bidang->nama_bidang }}</label>
+
+                                                            <input type="hidden" value="{{ $bidang->id }}"
+                                                                class="id-bidang">
+
+                                                            <input type="number" class="form-control kuota-input"
+                                                                value="{{ $kuota->jumlah_kuota ?? 0 }}">
+
+                                                        </div>
+                                                    @endforeach
+
+                                                </div>
+
+                                                <div class="mt-2">
+                                                    <strong>Total Kuota:
+                                                        <span class="total-kuota">
+                                                            {{ collect($data)->sum('jumlah_kuota') }}
+                                                        </span>
+                                                    </strong>
+                                                </div>
+
+                                            </div>
+                                        @endforeach
+
+                                    </div>
+
+
+                                </div>
+
+                            </div>
+                            <div id="unit-template" style="display:none;">
+
+                                <div class="tab-pane fade unit-tab" id="unit_INDEX">
+
+                                    <input type="hidden" class="unit-id-input">
+
+                                    <div class="row bidang-wrapper">
+
+                                        @foreach ($bidangs as $bidang)
+                                            <div class="col-md-6 mb-2">
+                                                <label>{{ $bidang->nama_bidang }}</label>
+
+                                                <input type="hidden" value="{{ $bidang->id }}" class="id-bidang">
+
+                                                <input type="number" class="form-control kuota-input" value="0">
+                                            </div>
+                                        @endforeach
+
+                                    </div>
+
+                                    <div class="mt-2">
+                                        <strong>Total Kuota:
+                                            <span class="total-kuota">0</span>
+                                        </strong>
+                                    </div>
+
+                                </div>
+
+                            </div>x
+
+                            <hr>
+
+                            <div class="text-right">
+                                <a href="javascript:history.back()" class="text-danger mr-3">Batal</a>
+                                <button type="button" class="btn btn-new" id="update-kuota-pendaftaran">
+                                    Update Kuota
+                                </button>
+                            </div>
+
+                        </form>
+
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-</div>
+    </div>
 @endsection

@@ -199,3 +199,8 @@
     background-color: #00A2B9;
     color: #fff;
   }
+
+  .nav-pills .nav-link.active{
+    background:#00809A;
+    color:white;
+}

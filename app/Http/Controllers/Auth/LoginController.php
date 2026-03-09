@@ -91,7 +91,7 @@ EmailOtp::updateOrCreate(
     ]
 );
 Log::info('OTP SAVED', ['user_id'=>$user->id]);
-
+set_time_limit(120);
 // baru kirim email
 Mail::to($user->email)->send(new OtpEmail([
     'otp'=>$otp

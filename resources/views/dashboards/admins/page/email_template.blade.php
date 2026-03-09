@@ -2,7 +2,7 @@
     <img style="height: auto;
         width: 40%; display: block;
       margin: 0 auto;"
-        src="https://study.indonesiapowerkmj.com/assets_ip2022/img/logo.png" alt="" />
+        src="https://studykmj.com/assets_ip2022/img/logo.png" alt="" />
     <br>
     <br>
     @if ($details['jenis'] == 'diterima')
@@ -31,8 +31,7 @@
     <br>
     <br>
     UBP Kamojang
-    @endcomponent
-    @component('mail::footer')
-        © 2024 PT Indonesia Power Kamojang POMU. All rights reserved
-    @endcomponent
-
+@endcomponent
+@component('mail::footer')
+    © {{ date('Y') }} PT Indonesia Power Kamojang POMU. All rights reserved
+@endcomponent

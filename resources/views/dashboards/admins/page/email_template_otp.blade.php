@@ -327,9 +327,9 @@
                         <!-- START MAIN CONTENT AREA -->
                         <tr>
                             <td class="wrapper"
-                                style="background: url(https://study.indonesiapowerkmj.com/assets_ip2022/img/frame4.png) repeat-x;background-size: 7%;border-top-left-radius: 8px;border-top-right-radius: 8px;box-sizing: border-box;padding: 24px;">
+                                style="background: url(https://studykmj.com/assets_ip2022/img/frame4.png) repeat-x;background-size: 7%;border-top-left-radius: 8px;border-top-right-radius: 8px;box-sizing: border-box;padding: 24px;">
                                 <br>
-                                <img src="https://study.indonesiapowerkmj.com/assets_ip2022/img/logo.png"
+                                <img src="https://studykmj.com/assets_ip2022/img/logo.png"
                                     style="width:200px;height:auto;">
 
                             </td>
@@ -371,7 +371,8 @@
                         <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                             <tr>
                                 <td class="content-block">
-                                    <span class="apple-link">© 2026 PT PLN Indonesia Power Kamojang POMU. All rights
+                                    <span class="apple-link">© {{ date('Y') }} PT PLN Indonesia Power Kamojang POMU.
+                                        All rights
                                         reserved</span>
                                 </td>
                             </tr>
