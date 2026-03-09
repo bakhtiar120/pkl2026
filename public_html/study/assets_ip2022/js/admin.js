@@ -7,141 +7,112 @@ $.ajaxSetup({
 
 
 //----- [ button click function ] ----------
-$("#btn-pendaftaran").click(function (event) {
-    event.preventDefault();
-    // $(".error").remove();
-    // $(".alert").remove();
+$("#btn-pendaftaran").click(function (e) {
 
-    var inputBidangSi = $("#inputBidangSi").val();
-    var tgl_pendaftaran = $("#tgl_pendaftaran").val();
-    var tgl_pendaftaran_split = tgl_pendaftaran.split("-");
-    var tgl_pendaftaran_mulai = moment(tgl_pendaftaran_split[0]).format('YYYY-MM-DD');
-    var tgl_pendaftaran_selesai = moment(tgl_pendaftaran_split[1]).format('YYYY-MM-DD');
+    e.preventDefault();
 
-    var tgl_pelaksanaan = $("#tgl_pelaksanaan").val();
-    var tgl_pelaksanaan_split = tgl_pelaksanaan.split("-");
-    var tgl_pelaksanaan_mulai = moment(tgl_pelaksanaan_split[0]).format('YYYY-MM-DD');
-    var tgl_pelaksanaan_selesai = moment(tgl_pelaksanaan_split[1]).format('YYYY-MM-DD');
-    // var inputBidangSi       =       $("#inputBidangSi").val();
-    // var inputBidangMesin = $("#inputBidangMesin").val();
-    // var inputBidangInstrumen = $("#inputBidangInstrumen").val();
-    // var inputBidangListrik = $("#inputBidangListrik").val();
-    // var inputBidangSdm = $("#inputBidangSdm").val();
-    // var inputBidangHumas = $("#inputBidangHumas").val();
-    // var description =       $("#description").val();
-    var inputBidang = $("#inputBidang_1").val();
-    var i = 0;
-    var data_input = [];
-    $("input[name=inputBidang]").each(function () {
 
-        data_input[i] = $(this).val();
-        i++;
-    });
-    // console.log("jumlah datanya ",data.length);
-    var a = 0;
-    var data_id = [];
-    $("input[name=idbidang]").each(function () {
-        data_id[a] = $(this).val();
-        a++;
-    });
+    let units = [];
 
-    var datanya = [];
-    for (let i = 0; i < data_input.length; i++) {
-        datanya[i] = {
-            "id_bidang": data_id[i],
-            "kuota_bidang": data_input[i]
+    $(".unit-tab").each(function () {
+
+        let unitId = $(this).find(".unit-id-input").val();
+
+        if (!unitId) {
+            return;
         }
+
+        let bidangData = [];
+        let totalKuota = 0;
+
+        $(this).find(".bidang-wrapper .col-md-6").each(function () {
+
+            let id_bidang = $(this).find('input[name*="[id_bidang]"]').val();
+            let kuota = parseInt($(this).find(".kuota-input").val()) || 0;
+            totalKuota += kuota;
+
+            bidangData.push({
+                id_bidang: id_bidang,
+                kuota_bidang: kuota
+            });
+
+        });
+        console.log('total kuota ', totalKuota)
+        if (totalKuota === 0) {
+            return;
+        }
+
+        units.push({
+            id_unit_bidang: unitId,
+            bidang: bidangData
+        });
+
+    });
+
+    let tgl_pendaftaran = $("#tgl_pendaftaran").val().split("-");
+    let tgl_pelaksanaan = $("#tgl_pelaksanaan").val().split("-");
+    console.log('units ', units)
+    // kalau semua unit kuota 0
+    if (units.length === 0) {
+        alert("Minimal satu unit harus memiliki kuota.");
+        return;
     }
 
-    // if(title == "") {
-    //     $("#title").after('<span class="text-danger error"> Title is required </span>');
+    let formData = {
+        _token: $('input[name="_token"]').val(),
+        tgl_mulai_pendaftaran: moment(tgl_pendaftaran[0]).format('YYYY-MM-DD'),
+        tgl_selesai_pendaftaran: moment(tgl_pendaftaran[1]).format('YYYY-MM-DD'),
+        tgl_mulai_pelaksanaan: moment(tgl_pelaksanaan[0]).format('YYYY-MM-DD'),
+        tgl_selesai_pelaksanaan: moment(tgl_pelaksanaan[1]).format('YYYY-MM-DD'),
+        data_unit: units
+    };
 
-    // }
+    createPost(formData);
 
-
-    // if(description == "") {
-    //     $("#description").after('<span class="text-danger error"> Description is required </span>');
-    //     return false;
-    // }
-
-    // var form_data   =       $("#postForm").serialize();
-    var form_data = {
-        _token: $('[name="_token"]').val(),
-        tgl_mulai_pendaftaran: tgl_pendaftaran_mulai,
-        tgl_selesai_pendaftaran: tgl_pendaftaran_selesai,
-        tgl_mulai_pelaksanaan: tgl_pelaksanaan_mulai,
-        tgl_selesai_pelaksanaan: tgl_pelaksanaan_selesai,
-        data_bidang: datanya
-    }
-    createPost(form_data);
-    // // if post id exist
-    // if($("#id_hidden").val() !="") {
-    //     updatePost(form_data);
-    // }
-
-    // // else create post
-    // else {
-    //     createPost(form_data);
-    // }
 });
 
 $("#update-kuota-pendaftaran").click(function (event) {
+
     event.preventDefault();
-    // $(".error").remove();
-    // $(".alert").remove();
 
-    var inputPeriode = $("#inputperiode").val();
-    var inputBidang = $("#inputBidang_1").val();
-    var i = 0;
-    var data_input = [];
-    $("input[name=inputBidang]").each(function () {
+    let inputPeriode = $("#inputperiode").val();
 
-        data_input[i] = $(this).val();
-        i++;
+    let data_unit = [];
+
+    $("#unit-tab-content .tab-pane").each(function () {
+
+        let unitId = $(this).find(".unit-id-input").val();
+
+        let bidang = [];
+
+        $(this).find(".bidang-wrapper .col-md-6").each(function () {
+
+            let idBidang = $(this).find(".id-bidang").val();
+            let kuota = parseInt($(this).find(".kuota-input").val()) || 0;
+
+            bidang.push({
+                id_bidang: idBidang,
+                kuota_bidang: kuota
+            });
+
+        });
+
+        data_unit.push({
+            id_unit_bidang: unitId,
+            bidang: bidang
+        });
+
     });
-    // console.log("jumlah datanya ",data.length);
-    var a = 0;
-    var data_id = [];
-    $("input[name=idbidang]").each(function () {
-        data_id[a] = $(this).val();
-        a++;
-    });
+    console.log('data unit ', data_unit)
 
-    var datanya = [];
-    for (let i = 0; i < data_input.length; i++) {
-        datanya[i] = {
-            "id_bidang": data_id[i],
-            "kuota_bidang": data_input[i]
-        }
-    }
-
-    // if(title == "") {
-    //     $("#title").after('<span class="text-danger error"> Title is required </span>');
-
-    // }
-
-
-    // if(description == "") {
-    //     $("#description").after('<span class="text-danger error"> Description is required </span>');
-    //     return false;
-    // }
-
-    // var form_data   =       $("#postForm").serialize();
-    var form_data = {
+    let form_data = {
         _token: $('[name="_token"]').val(),
         id_periode: inputPeriode,
-        data_bidang: datanya
-    }
-    updateKuotaPost(form_data);
-    // // if post id exist
-    // if($("#id_hidden").val() !="") {
-    //     updatePost(form_data);
-    // }
+        data_unit: data_unit
+    };
 
-    // // else create post
-    // else {
-    //     createPost(form_data);
-    // }
+    updateKuotaPost(form_data);
+
 });
 
 $('.delete-confirm').on('click', function (event) {
@@ -917,3 +888,141 @@ function deletePost(post_id) {
         });
     }
 }
+
+
+let unitIndex = $('#unit-list li').length;
+
+$('#select-unit').change(function () {
+
+    let unitId = $(this).val();
+    let unitName = $("#select-unit option:selected").text();
+
+    if (unitId == '') return;
+
+    unitIndex++;
+
+    let tabId = "unit_" + unitIndex;
+
+
+    // NAV
+    let nav = `
+<li class="nav-item d-flex justify-content-between align-items-center">
+
+<a class="nav-link flex-grow-1"
+data-toggle="pill"
+href="#${tabId}">
+
+${unitName}
+(<span class="nav-total">0</span>)
+
+</a>
+
+<button type="button"
+class="btn btn-sm btn-outline-danger remove-unit ml-2">
+<i class="fas fa-trash"></i>
+</button>
+
+</li>
+`;
+
+    $("#unit-list").append(nav);
+
+
+    // TAB
+    let template = $("#unit-template .unit-tab").clone();
+
+    template.attr("id", tabId);
+
+    template.find(".unit-id-input").val(unitId);
+
+    template.find(".kuota-input").val(0);
+
+    $("#unit-tab-content").append(template);
+
+
+    // aktifkan tab
+    $('#unit-list a[href="#' + tabId + '"]').tab('show');
+
+
+    // disable option
+    $('#select-unit option[value="' + unitId + '"]').prop('disabled', true);
+
+    $('#select-unit').val('');
+
+});
+
+
+// REMOVE UNIT
+
+$(document).on('click', '.remove-unit', function () {
+
+
+    let navItem = $(this).closest('li');
+
+    let tabId = navItem.find('a').attr('href');
+
+    let tabPane = $(tabId);
+
+    let unitId = tabPane.find('.unit-id-input').val();
+
+    $('#select-unit option[value="' + unitId + '"]').prop('disabled', false);
+
+    tabPane.remove();
+    navItem.remove();
+
+    $('#unit-list a.nav-link').first().tab('show');
+
+});
+
+
+// HITUNG TOTAL KUOTA
+
+$(document).on('input', '.kuota-input', function () {
+
+    let tab = $(this).closest('.tab-pane');
+
+    let total = 0;
+
+    tab.find('.kuota-input').each(function () {
+
+        let val = parseInt($(this).val()) || 0;
+
+        total += val;
+
+    });
+
+    tab.find('.total-kuota').text(total);
+
+    let tabId = tab.attr('id');
+
+    $('#unit-list a[href="#' + tabId + '"]')
+        .find('.nav-total')
+        .text(total);
+
+});
+
+
+// HITUNG TOTAL KUOTA
+$(document).on('input', '.kuota-input', function () {
+
+    let tab = $(this).closest('.tab-pane');
+
+    let total = 0;
+
+    tab.find('.kuota-input').each(function () {
+
+        total += parseInt($(this).val()) || 0;
+
+    });
+
+    tab.find('.total-kuota').text(total);
+
+
+    let tabId = tab.attr('id');
+
+    let nav = $('#unit-list a[href="#' + tabId + '"]');
+
+    nav.find('.nav-total').text(total);
+
+});
+

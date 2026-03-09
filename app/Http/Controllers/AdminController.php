@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Auth;
 use App\Models\User;
 use App\Models\Bidang;
+use App\Models\UnitBidang;
 use App\Models\Periode;
 use App\Models\KuotaPendaftaran;
 use App\Models\Pendaftaran;
@@ -49,28 +50,38 @@ class AdminController extends Controller
 
         return view('dashboards.admins.page.home');
     }
-    function pendaftaran_berjalan()
-    {
-        $periodes = DB::select("SELECT DISTINCT pe.tgl_mulai_pendaftaran as tgl_mulai_pendaftaran, pe.tgl_selesai_pendaftaran as tgl_selesai_pendaftaran, pe.tgl_mulai_pelaksanaan as tgl_mulai_pelaksanaan, pe.tgl_selesai_pelaksanaan as tgl_selesai_pelaksanaan,pe.id as id FROM periode pe, kuota_pendaftaran kp WHERE pe.id=kp.id_periode AND pe.tgl_selesai_pendaftaran>=CURDATE() ORDER BY pe.tgl_mulai_pendaftaran DESC");
+   public function pendaftaran_berjalan()
+{
+    $periodes = DB::table('periode as pe')
+        ->join('kuota_pendaftaran as kp', 'pe.id', '=', 'kp.id_periode')
+        ->leftJoin('pendaftaran as p', function ($join) {
+            $join->on('kp.id', '=', 'p.id_kuota')
+                 ->where('p.status_pendaftaran', 'Lolos');
+        })
+        // ->leftJoin('unit_bidangs as u', 'p.id_unit_kerja', '=', 'u.id')
+        ->where('pe.tgl_selesai_pendaftaran', '>=', now()->toDateString())
+        ->groupBy(
+            'pe.id',
+            'pe.tgl_mulai_pendaftaran',
+            'pe.tgl_selesai_pendaftaran',
+            'pe.tgl_mulai_pelaksanaan',
+            'pe.tgl_selesai_pelaksanaan'
+        )
+        ->select(
+            'pe.id',
+            'pe.tgl_mulai_pendaftaran',
+            'pe.tgl_selesai_pendaftaran',
+            'pe.tgl_mulai_pelaksanaan',
+            'pe.tgl_selesai_pelaksanaan',
+            DB::raw('COUNT(p.id) as jumlah_lolos'),
+            DB::raw('SUM(kp.jumlah_kuota) as jumlah_kuota'),
+        )
+        ->whereNull('kp.deleted_at')
+        ->orderBy('pe.tgl_mulai_pendaftaran', 'desc')
+        ->get();
 
-        // $periodes = Periode::join('kuota_pendaftaran', 'periode.id', '=', 'kuota_pendaftaran.id_periode')
-        //     ->where('periode.tgl_selesai_pendaftaran', '>=', Carbon::today()->toDateString())->get();
-
-        // $periodes = Periode::join('kuota_pendaftaran', 'periode.id', '=', 'kuota_pendaftaran.id_periode')
-        //     ->get(['periode.tgl_mulai_pendaftaran', 'SUM(kuota_pendaftaran.jumlah_kuota)', 'program_studi.id']);
-        foreach ($periodes as $periode) {
-            $kuotas = KuotaPendaftaran::where('id_periode', $periode->id)
-                ->get();
-            $jumlah = 0;
-            foreach ($kuotas as $kuota) {
-                $jumlah = $jumlah + Pendaftaran::where('id_kuota', $kuota->id)->where('status_pendaftaran', 'Lolos')->count();
-            }
-            $periode->jumlah_lolos = $jumlah;
-            $periode->jumlah_kuota = KuotaPendaftaran::where('id_periode', $periode->id)
-                ->sum('jumlah_kuota');
-        }
-        return view('dashboards.admins.page.pendaftaran', compact('periodes'));
-    }
+    return view('dashboards.admins.page.pendaftaran', compact('periodes'));
+}
     function tugas_peserta()
     {
         // $periodes = Periode::latest()->get();
@@ -89,29 +100,37 @@ class AdminController extends Controller
         }
         return view('dashboards.admins.page.tugas_peserta', compact('periodes'));
     }
-    function pendaftaran_selesai()
-    {
-        $periodes = Periode::join('kuota_pendaftaran', 'periode.id', '=', 'kuota_pendaftaran.id_periode')
+   public function pendaftaran_selesai()
+{
+    $periodes = DB::table('periode as pe')
+        ->join('kuota_pendaftaran as kp', 'pe.id', '=', 'kp.id_periode')
+        ->leftJoin('pendaftaran as p', function ($join) {
+            $join->on('kp.id', '=', 'p.id_kuota')
+                 ->where('p.status_pendaftaran', 'Lolos');
+        })
+        // ->leftJoin('unit_bidangs as u', 'p.id_unit_kerja', '=', 'u.id')
+        ->where('pe.tgl_selesai_pendaftaran', '<=', now()->toDateString())
+        ->groupBy(
+            'pe.id',
+            'pe.tgl_mulai_pendaftaran',
+            'pe.tgl_selesai_pendaftaran',
+            'pe.tgl_mulai_pelaksanaan',
+            'pe.tgl_selesai_pelaksanaan'
+        )
+        ->select(
+            'pe.id',
+            'pe.tgl_mulai_pendaftaran',
+            'pe.tgl_selesai_pendaftaran',
+            'pe.tgl_mulai_pelaksanaan',
+            'pe.tgl_selesai_pelaksanaan',
+            DB::raw('COUNT(p.id) as jumlah_lolos'),
+            DB::raw('SUM(kp.jumlah_kuota) as jumlah_kuota')
+        )
+        ->orderBy('pe.tgl_mulai_pendaftaran', 'DESC')
+        ->get();
 
-            ->where('periode.tgl_selesai_pendaftaran', '<=', Carbon::today())
-            ->select('periode.tgl_mulai_pendaftaran', 'periode.tgl_selesai_pendaftaran', 'periode.tgl_mulai_pelaksanaan', 'periode.tgl_selesai_pelaksanaan', 'periode.id AS id')->distinct()
-            ->orderBy('periode.tgl_mulai_pendaftaran', 'DESC')
-            ->get();
-
-        foreach ($periodes as $periode) {
-            $kuotas = KuotaPendaftaran::where('id_periode', $periode->id)
-                ->get();
-            $jumlah = 0;
-            foreach ($kuotas as $kuota) {
-                $jumlah = $jumlah + Pendaftaran::where('id_kuota', $kuota->id)->where('status_pendaftaran', 'Lolos')->count();
-            }
-            $periode->jumlah_lolos = $jumlah;
-            $periode->jumlah_kuota = KuotaPendaftaran::where('id_periode', $periode->id)
-                ->sum('jumlah_kuota');
-        }
-        // var_dump($periodes);
-        return view('dashboards.admins.page.pendaftaran_selesai', compact('periodes'));
-    }
+    return view('dashboards.admins.page.pendaftaran_selesai', compact('periodes'));
+}
     function nilai_peserta()
     {
         // $periodes = DB::select("SELECT DISTINCT pe.tgl_mulai_pendaftaran as tgl_mulai_pendaftaran, pe.tgl_selesai_pendaftaran as tgl_selesai_pendaftaran, pe.tgl_mulai_pelaksanaan as tgl_mulai_pelaksanaan, pe.tgl_selesai_pelaksanaan as tgl_selesai_pelaksanaan,pe.id as id FROM periode pe, kuota_pendaftaran kp WHERE pe.id=kp.id_periode AND pe.tgl_selesai_pendaftaran<=CURDATE()");
@@ -132,14 +151,49 @@ class AdminController extends Controller
     function buat_pendaftaran()
     {
         $bidangs = Bidang::latest()->get();
-        return view('dashboards.admins.page.buat_pendaftaran', compact('bidangs'));
+         $unit_bidangs = UnitBidang::latest()->get();
+        return view('dashboards.admins.page.buat_pendaftaran', compact('bidangs','unit_bidangs'));
     }
-    function edit_kuota_pendaftaran($id)
-    {
-        $id_periode = $id;
-        $bidangs = DB::select("SELECT DISTINCT bd.id as id_bidang, bd.nama_bidang,ku.jumlah_kuota FROM periode pe,bidang bd, kuota_pendaftaran ku WHERE bd.id=ku.id_bidang AND ku.id_periode={$id}");
-        return view('dashboards.admins.page.edit_kuota_pendaftaran', compact('bidangs', 'id_periode'));
-    }
+    public function edit_kuota_pendaftaran($id)
+{
+    $id_periode = $id;
+
+    // semua unit untuk dropdown
+    
+        $unit_bidangs = UnitBidang::select('id','name')->get();
+
+    // semua bidang untuk template
+    $bidangs = DB::table('bidang')
+        ->select('id', 'nama_bidang')
+        ->get();
+
+    // data kuota yang sudah ada
+    $kuotas = DB::table('kuota_pendaftaran as ku')
+        ->join('unit_bidangs as ub', 'ub.id', '=', 'ku.id_unit_bidang')
+        ->join('bidang as bd', 'bd.id', '=', 'ku.id_bidang')
+        ->where('ku.id_periode', $id)
+        ->select(
+            'ub.id as id_unit',
+            'ub.name as nama_unit',
+            'bd.id as id_bidang',
+            'bd.nama_bidang',
+            'ku.jumlah_kuota'
+        )
+        ->get();
+
+    // group per unit supaya gampang dibuat tab
+    $units = $kuotas->groupBy('id_unit');
+
+    return view(
+        'dashboards.admins.page.edit_kuota_pendaftaran',
+        compact(
+            'unit_bidangs',
+            'bidangs',
+            'units',
+            'id_periode'
+        )
+    );
+}
 
     function edit_bidang(Request $request)
     {
@@ -161,9 +215,15 @@ class AdminController extends Controller
             ])
             ->get();
         $bidangs = KuotaPendaftaran::join('bidang', 'bidang.id', '=', 'kuota_pendaftaran.id_bidang')
-            ->where('kuota_pendaftaran.id_periode', $id)
-            ->select('bidang.nama_bidang', 'kuota_pendaftaran.jumlah_kuota', 'kuota_pendaftaran.id')
-            ->get();
+    ->join('unit_bidangs', 'unit_bidangs.id', '=', 'kuota_pendaftaran.id_unit_bidang')
+    ->where('kuota_pendaftaran.id_periode', $id)
+    ->select(
+        'kuota_pendaftaran.id',
+        'bidang.nama_bidang',
+        'unit_bidangs.name',
+        'kuota_pendaftaran.jumlah_kuota'
+    )
+    ->get();
         foreach ($bidangs as $bidang) {
             $bidang->jumlah_lolos = Pendaftaran::where('id_kuota', $bidang->id)->where('status_pendaftaran', 'Lolos')
                 ->count();
@@ -221,12 +281,16 @@ class AdminController extends Controller
             ->get();
         // var_dump($member);
         $query_pendaftaran = KuotaPendaftaran::join('periode', 'kuota_pendaftaran.id_periode', '=', 'periode.id')
-            ->join('bidang', 'kuota_pendaftaran.id_bidang', '=', 'bidang.id')
-            ->where([
-                'kuota_pendaftaran.id' => $id,
-            ])
-            ->select('periode.*', 'bidang.nama_bidang', 'kuota_pendaftaran.jumlah_kuota')
-            ->first();
+    ->join('bidang', 'kuota_pendaftaran.id_bidang', '=', 'bidang.id')
+    ->join('unit_bidangs', 'kuota_pendaftaran.id_unit_bidang', '=', 'unit_bidangs.id')
+    ->where('kuota_pendaftaran.id', $id)
+    ->select(
+        'periode.*',
+        'bidang.nama_bidang',
+        'unit_bidangs.name',
+        'kuota_pendaftaran.jumlah_kuota'
+    )
+    ->first();
         // var_dump($query_pendaftaran);
         $jumlah_lolos = Pendaftaran::where('id_kuota', $id)->where('status_pendaftaran', 'Lolos')
             ->count();
@@ -287,10 +351,27 @@ class AdminController extends Controller
                 'pendaftaran.status_pendaftaran' => 'Lolos',
             ])
             ->get();
-        $bidangs = KuotaPendaftaran::join('bidang', 'bidang.id', '=', 'kuota_pendaftaran.id_bidang')
-            ->where('kuota_pendaftaran.id_periode', $id)
-            ->select('bidang.nama_bidang', 'kuota_pendaftaran.jumlah_kuota', 'kuota_pendaftaran.id')
-            ->get();
+           $bidangs = KuotaPendaftaran::join('bidang', 'bidang.id', '=', 'kuota_pendaftaran.id_bidang')
+        ->join('unit_bidangs', 'unit_bidangs.id', '=', 'kuota_pendaftaran.id_unit_bidang')
+        ->leftJoin('pendaftaran', function ($join) {
+            $join->on('pendaftaran.id_kuota', '=', 'kuota_pendaftaran.id')
+                 ->where('pendaftaran.status_pendaftaran', 'Lolos');
+        })
+        ->where('kuota_pendaftaran.id_periode', $id)
+        ->groupBy(
+            'kuota_pendaftaran.id',
+            'bidang.nama_bidang',
+            'unit_bidangs.name',
+            'kuota_pendaftaran.jumlah_kuota'
+        )
+        ->select(
+            'kuota_pendaftaran.id',
+            'bidang.nama_bidang',
+            'unit_bidangs.name',
+            'kuota_pendaftaran.jumlah_kuota',
+            DB::raw('COUNT(pendaftaran.id) as jumlah_lolos')
+        )
+        ->get();
         foreach ($bidangs as $bidang) {
             $bidang->jumlah_lolos = Pendaftaran::where('id_kuota', $bidang->id)->where('status_pendaftaran', 'Lolos')
                 ->count();
@@ -347,12 +428,18 @@ class AdminController extends Controller
             ->select('pendaftaran.*', 'profil_member.id as id_member', 'profil_member.created_at as created_at_', 'profil_member.nama_lengkap as nama_lengkap')
             ->get();
         // var_dump($member);
-        $query_pendaftaran = KuotaPendaftaran::join('periode', 'kuota_pendaftaran.id_periode', '=', 'periode.id')
-            ->join('bidang', 'kuota_pendaftaran.id_bidang', '=', 'bidang.id')
-            ->where([
-                'kuota_pendaftaran.id' => $id,
-            ])
-            ->first();
+        
+            $query_pendaftaran = KuotaPendaftaran::join('periode', 'kuota_pendaftaran.id_periode', '=', 'periode.id')
+    ->join('bidang', 'kuota_pendaftaran.id_bidang', '=', 'bidang.id')
+    ->join('unit_bidangs', 'kuota_pendaftaran.id_unit_bidang', '=', 'unit_bidangs.id')
+    ->where('kuota_pendaftaran.id', $id)
+    ->select(
+        'periode.*',
+        'bidang.nama_bidang',
+        'unit_bidangs.name',
+        'kuota_pendaftaran.jumlah_kuota'
+    )
+    ->first();
         $jumlah_lolos = Pendaftaran::where('id_kuota', $id)->where('status_pendaftaran', 'Lolos')
             ->count();
         return view('dashboards.admins.page.detail_bidang_pendaftaran_selesai', compact('member', 'member_not_verified', 'member_not_lolos', 'query_pendaftaran', 'jumlah_lolos'));
@@ -716,54 +803,141 @@ class AdminController extends Controller
             ->select('profil_member.*', 'profil_member.created_at as created_at_', 'users.picture as picture','users.email', 'bidang.nama_bidang as nama_bidang')->first();
         return view('dashboards.admins.page.profile_detail', compact('data_user'));
     }
-    function store_pendaftaran(Request $request)
-    {
-        $data = Periode::create(
-            [
-                'tgl_mulai_pendaftaran' => $request->tgl_mulai_pendaftaran,
-                'tgl_selesai_pendaftaran' => $request->tgl_selesai_pendaftaran,
-                'tgl_mulai_pelaksanaan' => $request->tgl_mulai_pelaksanaan,
-                'tgl_selesai_pelaksanaan' => $request->tgl_selesai_pelaksanaan
-            ]
+  public function store_pendaftaran(Request $request)
+{
+    $request->validate([
+        'tgl_mulai_pendaftaran' => 'required|date',
+        'tgl_selesai_pendaftaran' => 'required|date|after_or_equal:tgl_mulai_pendaftaran',
+        'tgl_mulai_pelaksanaan' => 'required|date',
+        'tgl_selesai_pelaksanaan' => 'required|date|after_or_equal:tgl_mulai_pelaksanaan',
+
+        'data_unit' => 'required|array|min:1',
+
+        'data_unit.*.id_unit_bidang' => 'required|exists:unit_bidangs,id',
+
+        'data_unit.*.bidang' => 'required|array|min:1',
+
+        'data_unit.*.bidang.*.id_bidang' => 'required|exists:bidang,id',
+        'data_unit.*.bidang.*.kuota_bidang' => 'required|integer'
+    ]);
+
+    DB::beginTransaction();
+
+    try {
+
+        $periode = Periode::create([
+            'tgl_mulai_pendaftaran' => $request->tgl_mulai_pendaftaran,
+            'tgl_selesai_pendaftaran' => $request->tgl_selesai_pendaftaran,
+            'tgl_mulai_pelaksanaan' => $request->tgl_mulai_pelaksanaan,
+            'tgl_selesai_pelaksanaan' => $request->tgl_selesai_pelaksanaan
+        ]);
+
+        foreach ($request->data_unit as $unit) {
+
+            foreach ($unit['bidang'] as $bidang) {
+
+                // hanya simpan kalau kuota > 0
+                KuotaPendaftaran::create([
+                        'id_periode' => $periode->id,
+                        'id_unit_bidang' => $unit['id_unit_bidang'],
+                        'id_bidang' => $bidang['id_bidang'],
+                        'jumlah_kuota' => $bidang['kuota_bidang']
+                    ]);
+
+            }
+
+        }
+
+        DB::commit();
+
+        return response()->json([
+            "status" => "success",
+            "message" => "Periode pendaftaran berhasil dibuat"
+        ]);
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+
+        return response()->json([
+            "status" => "error",
+            "message" => $e->getMessage()
+        ],500);
+
+    }
+}
+
+  public function update_kuota_pendaftaran(Request $request)
+{
+    $validated = $request->validate([
+        'id_periode' => 'required|exists:periode,id',
+        'data_unit' => 'required|array|min:1',
+
+        'data_unit.*.id_unit_bidang' => 'required|exists:unit_bidangs,id',
+        'data_unit.*.bidang' => 'required|array|min:1',
+
+        'data_unit.*.bidang.*.id_bidang' => 'required|exists:bidang,id',
+        'data_unit.*.bidang.*.kuota_bidang' => 'required|integer|min:0'
+    ]);
+
+    DB::beginTransaction();
+
+    try {
+
+        $idPeriode = $validated['id_periode'];
+
+        // ambil unit yang dikirim frontend
+        $unitIds = collect($validated['data_unit'])
+                    ->pluck('id_unit_bidang')
+                    ->toArray();
+
+        // HAPUS UNIT YANG TIDAK ADA DI REQUEST
+        KuotaPendaftaran::where('id_periode', $idPeriode)
+            ->whereNotIn('id_unit_bidang', $unitIds)
+            ->delete();
+
+        $dataUpsert = [];
+
+        foreach ($validated['data_unit'] as $unit) {
+
+            foreach ($unit['bidang'] as $bidang) {
+
+                $dataUpsert[] = [
+                    'id_periode'      => $idPeriode,
+                    'id_unit_bidang'  => $unit['id_unit_bidang'],
+                    'id_bidang'       => $bidang['id_bidang'],
+                    'jumlah_kuota'    => $bidang['kuota_bidang'],
+                ];
+            }
+        }
+
+        KuotaPendaftaran::upsert(
+            $dataUpsert,
+            ['id_periode', 'id_unit_bidang', 'id_bidang'],
+            ['jumlah_kuota']
         );
-        for ($a = 0; $a < count($request->data_bidang); $a++) {
-            $data_bidang = $request->data_bidang[$a];
-            $id_bidang = $data_bidang['id_bidang'];
-            $jumlah_kuota = $data_bidang['kuota_bidang'];
-            KuotaPendaftaran::create(
-                [
-                    'id_bidang' => $id_bidang,
-                    'id_periode' => $data->id,
-                    'jumlah_kuota' => $jumlah_kuota
-                ]
-            );
-        }
-        Alert::success('Congrats', 'Data Periode Pendaftaran Berhasil Disimpan');
-        // return redirect('/admin/pendaftaran_berjalan')
-        //         ->with([
-        //             'success' => 'Data Berhasil Disimpan'
-        //         ]);
-        return response()->json(["status" => "success", "message" => "pembuatan periode sukses"]);
-    }
 
-    function update_kuota_pendaftaran(Request $request)
-    {
-        for ($a = 0; $a < count($request->data_bidang); $a++) {
+        DB::commit();
 
-            $data_bidang = $request->data_bidang[$a];
-            $id_bidang = $data_bidang['id_bidang'];
-            $jumlah_kuota = $data_bidang['kuota_bidang'];
-            KuotaPendaftaran::where('id_periode', $request->id_periode)
-                ->where('id_bidang', $id_bidang)
-                ->update(['jumlah_kuota' => $jumlah_kuota]);
-        }
         Alert::success('Congrats', 'Data Kuota Pendaftaran Berhasil Diupdate');
-        // return redirect('/admin/pendaftaran_berjalan')
-        //         ->with([
-        //             'success' => 'Data Berhasil Disimpan'
-        //         ]);
-        return response()->json(["status" => "success", "message" => "pembuatan periode sukses"]);
+
+        return response()->json([
+            "status" => "success",
+            "message" => "Data Kuota Pendaftaran Berhasil Diupdate"
+        ]);
+
+    } catch (\Exception $e) {
+
+        DB::rollBack();
+        Log::error('Update Kuota Error: '.$e->getMessage());
+
+        return response()->json([
+            "status" => "error",
+            "message" => "Terjadi kesalahan saat mengupdate kuota"
+        ], 500);
     }
+}
+
     function chart()
     {
         return view('dashboards.admins.page.chart');

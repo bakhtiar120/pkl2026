@@ -142,9 +142,8 @@
             border-radius: 4px;
             box-sizing: border-box;
             color: #0867ec;
-            cursor: pointer;
             display: inline-block;
-            font-size: 16px;
+            font-size: 28px;
             font-weight: bold;
             margin: 0;
             padding: 12px 24px;
@@ -153,25 +152,24 @@
         }
 
         .btn-primary table td {
-            background-color: #007FE0;
+            background-color: #ffffff;
         }
 
         .btn-primary a {
-            background-color: #007FE0;
-            border-color: #007FE0;
-            color: #ffffff;
+            background-color: #ffffff;
+            border-color: #ffffff;
+            color: #035B71;
         }
 
-        @media all {
-            .btn-primary table td:hover {
-                background-color: #0A6CB8 !important;
-            }
-
-            .btn-primary a:hover {
-                background-color: #0A6CB8 !important;
-                border-color: #0A6CB8 !important;
-            }
-        }
+        /* @media all {
+      .btn-primary table td:hover {
+        background-color: #0A6CB8 !important;
+      }
+      .btn-primary a:hover {
+        background-color: #0A6CB8 !important;
+        border-color: #0A6CB8 !important;
+      }
+    } */
 
         /* -------------------------------------
     OTHER STYLES THAT MIGHT BE USEFUL
@@ -322,7 +320,7 @@
                 <div class="content">
 
                     <!-- START CENTERED WHITE CONTAINER -->
-                    <span class="preheader">Email konfirmasi atur ulang password.</span>
+                    <span class="preheader">OTP Masuk PKL PT PLN Indonesia Power UBP Kamojang</span>
                     <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="main"
                         style="background: #ffffff;border: 1px solid #eaebed;border-radius: 8px;width: 100%;">
 
@@ -339,10 +337,8 @@
                         </tr>
                         <tr>
                             <td class="wrapper" style="box-sizing: border-box;padding: 24px;background: #ffffff;">
-                                <p><b>Atur Ulang Password</b></p>
-                                <p>Dengan mengklik tombol dibawah ini, maka password Anda akan dirubah menjadi
-                                    <b>12345678</b>.
-                                    Anda dapat merubah password kembali setalah masuk Di Dashboard Peserta
+                                <p><b>OTP Masuk PT PLN Indonesia Power UBP Kamojang</b></p>
+                                <p>Berikut kode verifikasi Anda untuk masuk. <br>Demi keamanan, jangan bagikan kode ini.
                                 </p>
 
                                 <table role="presentation" border="0" cellpadding="0" cellspacing="0"
@@ -354,8 +350,7 @@
                                                     cellspacing="0">
                                                     <tbody>
                                                         <tr>
-                                                            <td> <a href="{{ $details['link'] }}" target="_blank">Reset
-                                                                    Password</a> </td>
+                                                            <td> <a>{{ $details['otp'] }}</a> </td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -363,6 +358,8 @@
                                         </tr>
                                     </tbody>
                                 </table>
+
+                                <p>Kode OTP Anda akan kadalursa dalam 5 menit</p>
                             </td>
                         </tr>
 
@@ -375,7 +372,8 @@
                             <tr>
                                 <td class="content-block">
                                     <span class="apple-link">© {{ date('Y') }} PT PLN Indonesia Power Kamojang POMU.
-                                        All rights reserved</span>
+                                        All rights
+                                        reserved</span>
                                 </td>
                             </tr>
 
