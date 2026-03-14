@@ -52,6 +52,22 @@
                                     <hr>
                                 </div>
                             </div>
+                            <!-- Info -->
+                            <div class="row">
+                                <div class="col-xl-12 col-md-12 col-sm-12">
+                                    <label class="h6 font-weight-bold text-gray-500">Unit Kerja & Bidang</label>
+                                    <div class="alert alert-info">
+                                        <ul>
+                                            <li>Wajib masukan nilai kuota. Apabila tidak dibuka pendaftaran pada suatu
+                                                bidang, masukan nilai kuota nol (0)</li>
+                                            <li>Unit kerja dengan total kuota nol (0) tidak akan disimpan</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Info End -->
+
+
                             <div class="row">
 
                                 <!-- LEFT PANEL -->

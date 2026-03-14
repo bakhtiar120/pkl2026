@@ -13,6 +13,7 @@ use Validator;
 use Periode; 
 use KuotaPendaftaran;
 use Pendaftaran;
+use Illuminate\Support\Facades\DB;
 
 class ProfilMemberController extends Controller
 {
@@ -115,14 +116,42 @@ class ProfilMemberController extends Controller
 
     function list_kuota(Request $request) {
       try {
-        $data = KuotaPendaftaran::leftJoin('bidang', 'kuota_pendaftaran.id_bidang','=','bidang.id')
-                ->where('kuota_pendaftaran.id_periode',$request->id_periode)
-                ->select('kuota_pendaftaran.*','bidang.nama_bidang')->get();
+        // $data = KuotaPendaftaran::leftJoin('bidang', 'kuota_pendaftaran.id_bidang','=','bidang.id')
+        //         ->where('kuota_pendaftaran.id_periode',$request->id_periode)
+        //         ->select('kuota_pendaftaran.*','bidang.nama_bidang')->get();
+               $data = DB::table('kuota_pendaftaran')
+        ->join('bidang', 'bidang.id', '=', 'kuota_pendaftaran.id_bidang')
+        ->where('kuota_pendaftaran.id_periode', $request->id_periode)
+        ->where('kuota_pendaftaran.id_unit_bidang', $request->unit)
+        ->select(
+            'kuota_pendaftaran.id',
+            'bidang.nama_bidang',
+            'kuota_pendaftaran.jumlah_kuota'
+        )
+        ->get();
         return response()->json(["status" => "success", "message" => "sukses", "data" =>$data]);
       } catch (Exception $e) {
         return response()->json(["status" => "error", "message" => $e->getMessage()]);
       } 
     }
+
+    public function list_unit_kerja(Request $request)
+{
+    try {
+        // $data = KuotaPendaftaran::leftJoin('bidang', 'kuota_pendaftaran.id_bidang','=','bidang.id')
+        //         ->where('kuota_pendaftaran.id_periode',$request->id_periode)
+        //         ->select('kuota_pendaftaran.*','bidang.nama_bidang')->get();
+                 $data = DB::table('kuota_pendaftaran')
+        ->join('unit_bidangs', 'unit_bidangs.id', '=', 'kuota_pendaftaran.id_unit_bidang')
+        ->where('kuota_pendaftaran.id_periode', $request->id_periode)
+        ->select('unit_bidangs.id', 'unit_bidangs.name')
+        ->distinct()
+        ->get();
+        return response()->json(["status" => "success", "message" => "sukses", "data" =>$data]);
+      } catch (Exception $e) {
+        return response()->json(["status" => "error", "message" => $e->getMessage()]);
+      } 
+}
 
     function simpan_pendaftaran(Request $request){
       try { 
