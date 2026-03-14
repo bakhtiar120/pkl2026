@@ -123,6 +123,7 @@ class ProfilMemberController extends Controller
         ->join('bidang', 'bidang.id', '=', 'kuota_pendaftaran.id_bidang')
         ->where('kuota_pendaftaran.id_periode', $request->id_periode)
         ->where('kuota_pendaftaran.id_unit_bidang', $request->unit)
+        ->where('kuota_pendaftaran.jumlah_kuota', '>', 0)
         ->select(
             'kuota_pendaftaran.id',
             'bidang.nama_bidang',
