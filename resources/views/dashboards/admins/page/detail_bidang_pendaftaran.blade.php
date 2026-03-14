@@ -139,7 +139,7 @@
                                                                 class="fas fa-solid fa-times fa-sm pr-1"></i>Tolak</a>
                                                         <button onclick="showModal({{ $member_1->id_member }})"
                                                             type="button" class="btn btn-sm btn-outline-warning">Ubah
-                                                            Bidang</button>
+                                                            Unit Kerja & Bidang</button>
                                                     </td>
                                                 </tr>
                                             @endforeach
@@ -228,7 +228,7 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLongTitle">Ubah Bidang</h5>
+                    <h5 class="modal-title" id="exampleModalLongTitle">Ubah Unit Kerja dan Bidang</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -236,11 +236,15 @@
                 <div class="modal-body">
 
                     <div class="form-group">
-                        <label for="id_periode">Pilih Priode Pendaftaran</label>
+                        <label for="id_periode">Pilih Periode Pendaftaran</label>
                         <select class="form-control" name="id_periode" id="id_periode">
                         </select>
                     </div>
-
+                    <div class="form-group">
+                        <label for="id_unit_kerja">Pilih Unit Kerja</label>
+                        <select class="form-control" id="id_unit_kerja" name="id_unit_kerja">
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label for="id_kuota">Pilih Bidang PKL</label>
                         <select class="form-control" id="id_kuota" name="id_kuota">
@@ -267,75 +271,206 @@
         </div>
     </div>
     <script>
-        function showModal(id) {
-            $('#exampleModalCenter').modal("show");
-            $(`:input[name='id']`).val(id)
+        let selectedPeriode = null
+        let selectedUnit = null
+        let selectedKuota = null
+
+        function showModal(id, periode = null, unit = null, kuota = null) {
+
+            $('#exampleModalCenter').modal("show")
+
+            $(":input[name='id']").val(id)
+
+            selectedPeriode = periode
+            selectedUnit = unit
+            selectedKuota = kuota
+
+            loadPeriode()
+
         }
 
-        function list_kuota(id_periode) {
-            $.get(`/admin/api/list-kuota/${id_periode}`).done(function(data) {
-                var html = ``;
-                $.each(data.data, function(key, val) {
-                    html +=
-                        `<option jumlah_kuota="${val.jumlah_kuota}" value="${val.id}">${val.nama_bidang} </option>`;
-                });
-                $("#id_kuota").html(html);
-                if (!$(`:input[name='id']`).val()) {
-                    $(":input[name='id_kuota']").val(data.data[0].id).change();
-                    $('#kuota_bidang').val(data.data[0].jumlah_kuota);
-                    $("#id_kuota").change();
-                }
-            });
+
+        /* =========================
+           LOAD PERIODE
+        ========================= */
+
+        function loadPeriode() {
+
+            $.get(`/admin/api/list-priode-pendaftaran-aktif`).done(function(res) {
+
+                let html = ``
+
+                $.each(res.data, function(i, val) {
+
+                    html += `<option 
+                        data-mulai="${val.tgl_mulai_pelaksanaan}"
+                        data-selesai="${val.tgl_selesai_pelaksanaan}"
+                        value="${val.id}">
+                        ${moment(val.tgl_mulai_pendaftaran).locale('id').format('DD MMMM YYYY')}
+                        -
+                        ${moment(val.tgl_selesai_pendaftaran).locale('id').format('DD MMMM YYYY')}
+                     </option>`
+                })
+
+                $("#id_periode").html(html)
+
+                let periode = selectedPeriode ?? res.data[0].id
+
+                $("#id_periode").val(periode)
+
+                updateTanggal()
+
+                loadUnitKerja(periode)
+
+            })
+
         }
 
-        $.get(`/admin/api/list-priode-pendaftaran-aktif`).done(function(data) {
-            if (data.data.length) {
-                var html = ``;
-                $.each(data.data, function(key, val) {
-                    html +=
-                        `<option data-tgl_mulai_pelaksanaan="${val.tgl_mulai_pelaksanaan}"  data-tgl_selesai_pelaksanaan="${val.tgl_selesai_pelaksanaan}" value="${val.id}">${moment(val.tgl_mulai_pendaftaran).locale('id').format('DD MMMM YYYY')} - ${moment(val.tgl_selesai_pendaftaran).locale('id').format('DD MMMM YYYY')}</option>`;
-                });
-                $("#id_periode").html(html);
-                if (data.data) {
-                    list_kuota(data.data[0].id);
-                    $(":input[name='id_periode']").val(data.data[0].id).change();
-                    $(".simpan-kuota").prop('disabled', false);
-                }
-            } else {
-                $(".simpan-kuota").prop('disabled', true);
-            }
-        });
 
-        $("#id_kuota").change(function() {
-            var jumlah_kuota = $(`#id_kuota>[value='${$("#id_kuota").val()}']`).attr('jumlah_kuota');
-            $('#kuota_bidang').val(jumlah_kuota);
-        });
+        /* =========================
+           LOAD UNIT KERJA
+        ========================= */
+
+        function loadUnitKerja(id_periode) {
+
+            $("#id_unit_kerja").html(`<option>Loading...</option>`)
+
+            $.get(`/admin/api/list-unit-kerja/${id_periode}`).done(function(res) {
+
+                let html = ``
+
+                $.each(res.data, function(i, val) {
+                    html += `<option value="${val.id}">${val.name}</option>`
+                })
+
+                $("#id_unit_kerja").html(html)
+
+                let unit = selectedUnit ?? res.data[0].id
+
+                $("#id_unit_kerja").val(unit)
+
+                loadBidang(id_periode, unit)
+
+            })
+
+        }
+
+
+        /* =========================
+           LOAD BIDANG
+        ========================= */
+
+        function loadBidang(id_periode, id_unit) {
+
+            $("#id_kuota").html(`<option>Loading...</option>`)
+
+            $.get(`/admin/api/list-kuota/${id_periode}/${id_unit}`).done(function(res) {
+
+                let html = ``
+
+                $.each(res.data, function(i, val) {
+
+                    html += `<option 
+                        jumlah_kuota="${val.jumlah_kuota}" 
+                        value="${val.id}">
+                        ${val.nama_bidang}
+                     </option>`
+                })
+
+                $("#id_kuota").html(html)
+
+                let kuota = selectedKuota ?? res.data[0].id
+
+                $("#id_kuota").val(kuota).change()
+
+            })
+
+        }
+
+
+        /* =========================
+           UPDATE TANGGAL
+        ========================= */
+
+        function updateTanggal() {
+
+            let mulai = $("#id_periode option:selected").data("mulai")
+            let selesai = $("#id_periode option:selected").data("selesai")
+
+            $('#tglMulaiAndSelesai').val(
+                `${moment(mulai).locale('id').format('DD MMMM YYYY')} - ${moment(selesai).locale('id').format('DD MMMM YYYY')}`
+            )
+
+        }
+
+
+        /* =========================
+           EVENT
+        ========================= */
 
         $("#id_periode").change(function() {
-            var isi =
-                `${moment($(`#id_periode>[value='${$("#id_periode").val()}']`).data('tgl_mulai_pelaksanaan')).locale('id').format('DD MMMM YYYY')} - ${moment($(`#id_periode>[value='${$("#id_periode").val()}']`).data('tgl_selesai_pelaksanaan')).locale('id').format('DD MMMM YYYY')}`;
-            $('#tglMulaiAndSelesai').val(isi);
-            $.get(`/admin/api/list-kuota/${$(this).val()}`).done(function(data) {
-                var html = ``;
-                $.each(data.data, function(key, val) {
-                    html +=
-                        `<option jumlah_kuota="${val.jumlah_kuota}" value="${val.id}">${val.nama_bidang} </option>`;
-                });
-                $("#id_kuota").html(html);
-                $(":input[name='id_kuota']").val(data.data[0].id).change();
-                $('#kuota_bidang').val(data.data[0].jumlah_kuota);
-                $("#id_kuota").change();
-            });
-        });
 
-        $('.simpan-kuota').on("click", function() {
+            selectedUnit = null
+            selectedKuota = null
+
+            updateTanggal()
+
+            loadUnitKerja($(this).val())
+
+        })
+
+
+        $("#id_unit_kerja").change(function() {
+
+            selectedKuota = null
+
+            loadBidang($("#id_periode").val(), $(this).val())
+
+        })
+
+
+        $("#id_kuota").change(function() {
+
+            let kuota = $("#id_kuota option:selected").attr("jumlah_kuota")
+
+            $("#kuota_bidang").val(kuota)
+
+        })
+
+
+        /* =========================
+           SIMPAN
+        ========================= */
+
+        $(".simpan-kuota").click(function() {
+
             $.post(`/admin/api/simpan-pendaftaran`, {
+
                 id_kuota: $("#id_kuota").val(),
-                id_profil: $(`:input[name='id']`).val(),
-            }).done(function(data) {
-                $('#exampleModalCenter').modal("hide");
-                location.reload();
-            });
+                id_profil: $(":input[name='id']").val()
+
+            }).done(function(res) {
+
+                if (res.status == "success") {
+
+                    alert("Data berhasil disimpan")
+
+                    $('#exampleModalCenter').modal("hide")
+
+                    location.reload()
+
+                } else {
+
+                    alert(res.message)
+
+                }
+
+            }).fail(function() {
+
+                alert("Terjadi kesalahan server")
+
+            })
+
         })
     </script>
 @endsection

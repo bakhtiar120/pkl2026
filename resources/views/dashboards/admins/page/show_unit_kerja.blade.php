@@ -37,17 +37,25 @@
                                 <tbody>
                                     @foreach ($unitkerjas as $unit)
                                         <tr>
-                                            <td>{{ $unit->name }}</td>
+                                            <td>{{ $unit->name }}
+                                                @if ($unit->id == 1)
+                                                    <span class="badge badge-pill badge-new">Default</span>
+                                                @endif
+                                            </td>
                                             <td>
                                                 <a href="javascript:void(0)"
                                                     class="btn btn-sm btn-outline-success editUnitKerja"
                                                     data-id="{{ $unit->id }}">
                                                     <i class="fas fa-pen fa-sm pr-1"></i>Edit
                                                 </a>
-                                                <a href="javascript:void(0)"
-                                                    class="btn btn-sm btn-outline-danger delete-confirm-unit-kerja"
-                                                    data-id="{{ $unit->id }}"><i
-                                                        class="fas fa-trash fa-sm pr-1"></i>Hapus</a>
+
+                                                @if ($unit->id != 1)
+                                                    <a href="javascript:void(0)"
+                                                        class="btn btn-sm btn-outline-danger delete-confirm-unit-kerja"
+                                                        data-id="{{ $unit->id }}">
+                                                        <i class="fas fa-trash fa-sm pr-1"></i>Hapus
+                                                    </a>
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach

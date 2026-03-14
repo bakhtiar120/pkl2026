@@ -187,7 +187,8 @@ Route::post('update-unit-kerja/{id}', [UnitBidangController::class, 'update_ajax
 
     Route::group(['prefix' => 'api'], function () {
         Route::get('/list-priode-pendaftaran-aktif', [ProfilMemberController::class, 'list_priode_pendaftaran_aktif_admin']);
-        Route::get('/list-kuota/{id_periode}', [ProfilMemberController::class, 'list_kuota']);
+        Route::get('/list-kuota/{id_periode}/{unit}', [ProfilMemberController::class, 'list_kuota']);
+        Route::get('/list-unit-kerja/{id_periode}', [ProfilMemberController::class, 'list_unit_kerja']);
         Route::post('/simpan-pendaftaran', [ProfilMemberController::class, 'simpan_pendaftaran_admin']);
         Route::post('/simpan-pengumuman ', [PengumumanController::class, 'simpan_pengumuman']);
         Route::get('/get-pengumuman ', [PengumumanController::class, 'get']);
@@ -230,7 +231,8 @@ Route::group(['prefix' => 'user', 'middleware' => ['auth','otp','isUser', 'Preve
         Route::post('/upload-pasfoto', [ProfilMemberController::class, 'upload_pasfoto']);
         Route::post('/upload-berkas', [ProfilMemberController::class, 'upload_berkas']);
         Route::get('/list-priode-pendaftaran-aktif', [ProfilMemberController::class, 'list_priode_pendaftaran_aktif']);
-        Route::get('/list-kuota/{id_periode}', [ProfilMemberController::class, 'list_kuota']);
+        Route::get('/list-kuota/{id_periode}/{unit}', [ProfilMemberController::class, 'list_kuota']);
+        Route::get('/list-unit-kerja/{id_periode}', [ProfilMemberController::class, 'list_unit_kerja']);
         Route::post('/simpan-pendaftaran', [ProfilMemberController::class, 'simpan_pendaftaran']);
         Route::post('/validasi-pendaftaran', [ProfilMemberController::class, 'validasi_pendaftaran']);
         Route::get('/get-pendaftaran/{id}', [ProfilMemberController::class, 'get_pendaftaran']);

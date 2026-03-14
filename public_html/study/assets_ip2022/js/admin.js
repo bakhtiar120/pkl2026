@@ -906,21 +906,22 @@ $('#select-unit').change(function () {
 
     // NAV
     let nav = `
-<li class="nav-item d-flex justify-content-between align-items-center">
+<li class="nav-item">
 
-<a class="nav-link flex-grow-1"
+<a class="nav-link p-2 d-flex justify-content-between align-items-center"
 data-toggle="pill"
 href="#${tabId}">
-
+<div>
 ${unitName}
 (<span class="nav-total">0</span>)
-
-</a>
-
+</div>
 <button type="button"
 class="btn btn-sm btn-outline-danger remove-unit ml-2">
 <i class="fas fa-trash"></i>
 </button>
+</a>
+
+
 
 </li>
 `;
