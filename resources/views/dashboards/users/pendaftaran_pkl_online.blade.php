@@ -1036,6 +1036,18 @@
 
             }
 
+            $("#id_unit_kerja").change(function() {
+
+                let id_periode = $("#id_periode").val()
+                let id_unit = $(this).val()
+
+                selectedUnit = id_unit
+                selectedKuota = null
+
+                loadBidang(id_periode, id_unit)
+
+            })
+
             function loadBidang(id_periode, id_unit) {
                 console.log('load bidang')
 
