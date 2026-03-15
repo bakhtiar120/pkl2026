@@ -106,7 +106,9 @@ class ProfilMemberController extends Controller
     function list_priode_pendaftaran_aktif_admin(Request $request) {
       try {
         $tgl_sekarang = date('Y-m-d');
-        $data = Periode::get() ;
+        $data = Periode::whereDate('tgl_selesai_pendaftaran', '>=', $tgl_sekarang)
+            ->orderBy('tgl_mulai_pendaftaran')
+            ->get();
         return response()->json(["status" => "success", "message" => "sukses", "data" =>$data]);
       } catch (Exception $e) {
         return response()->json(["status" => "error", "message" => $e->getMessage()]);

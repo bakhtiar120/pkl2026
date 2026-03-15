@@ -262,14 +262,31 @@ class AdminController extends Controller
             ])
             ->select('pendaftaran.*', 'profil_member.id as id_member', 'profil_member.created_at as created_at_', 'profil_member.nama_lengkap as nama_lengkap')
             ->get();
-        $member_not_verified = Pendaftaran::join('profil_member', 'pendaftaran.id_profil', '=', 'profil_member.id')
-
-            ->where([
-                'pendaftaran.id_kuota' => $id,
-                'pendaftaran.status_pendaftaran' => 'Belum Verifikasi',
-            ])
-            ->select('pendaftaran.*', 'profil_member.id as id_member', 'profil_member.created_at as created_at_', 'profil_member.nama_lengkap as nama_lengkap')
-            ->get();
+      $member_not_verified = Pendaftaran::join(
+        'profil_member',
+        'pendaftaran.id_profil',
+        '=',
+        'profil_member.id'
+    )
+    ->join(
+        'kuota_pendaftaran',
+        'pendaftaran.id_kuota',
+        '=',
+        'kuota_pendaftaran.id'
+    )
+    ->where([
+        'pendaftaran.id_kuota' => $id,
+        'pendaftaran.status_pendaftaran' => 'Belum Verifikasi',
+    ])
+    ->select(
+        'pendaftaran.*',
+        'kuota_pendaftaran.id_periode',
+        'kuota_pendaftaran.id_unit_bidang as id_unit_kerja',
+        'profil_member.id as id_member',
+        'profil_member.created_at as created_at_',
+        'profil_member.nama_lengkap'
+    )
+    ->get();
 
         $member_not_lolos = Pendaftaran::join('profil_member', 'pendaftaran.id_profil', '=', 'profil_member.id')
 
