@@ -137,7 +137,13 @@
                                                             class="btn btn-sm btn-outline-danger tolak-magang"
                                                             data-id="{{ $member_1->id_member }}"><i
                                                                 class="fas fa-solid fa-times fa-sm pr-1"></i>Tolak</a>
-                                                        <button onclick="showModal({{ $member_1->id_member }})"
+                                                        <button
+                                                            onclick="showModal(
+    {{ $member_1->id_member }},
+    {{ $member_1->id_periode }},
+    {{ $member_1->id_unit_kerja }},
+    {{ $member_1->id_kuota }}
+)"
                                                             type="button" class="btn btn-sm btn-outline-warning">Ubah
                                                             Unit Kerja & Bidang</button>
                                                     </td>
@@ -303,21 +309,20 @@
                 $.each(res.data, function(i, val) {
 
                     html += `<option 
-                        data-mulai="${val.tgl_mulai_pelaksanaan}"
-                        data-selesai="${val.tgl_selesai_pelaksanaan}"
-                        value="${val.id}">
-                        ${moment(val.tgl_mulai_pendaftaran).locale('id').format('DD MMMM YYYY')}
-                        -
-                        ${moment(val.tgl_selesai_pendaftaran).locale('id').format('DD MMMM YYYY')}
-                     </option>`
+                data-mulai="${val.tgl_mulai_pelaksanaan}"
+                data-selesai="${val.tgl_selesai_pelaksanaan}"
+                value="${val.id}">
+                ${moment(val.tgl_mulai_pendaftaran).locale('id').format('DD MMMM YYYY')}
+                -
+                ${moment(val.tgl_selesai_pendaftaran).locale('id').format('DD MMMM YYYY')}
+            </option>`
                 })
 
                 $("#id_periode").html(html)
 
                 let periode = selectedPeriode ?? res.data[0].id
 
-                $("#id_periode").val(periode)
-
+                $("#id_periode").val(periode).change()
                 updateTanggal()
 
                 loadUnitKerja(periode)
@@ -345,7 +350,7 @@
 
                 $("#id_unit_kerja").html(html)
 
-                let unit = selectedUnit ?? res.data[0].id
+                let unit = selectedUnit ?? res.data[0]?.id
 
                 $("#id_unit_kerja").val(unit)
 
@@ -371,17 +376,21 @@
                 $.each(res.data, function(i, val) {
 
                     html += `<option 
-                        jumlah_kuota="${val.jumlah_kuota}" 
-                        value="${val.id}">
-                        ${val.nama_bidang}
-                     </option>`
+                jumlah_kuota="${val.jumlah_kuota}" 
+                value="${val.id}">
+                ${val.nama_bidang}
+            </option>`
                 })
 
                 $("#id_kuota").html(html)
 
-                let kuota = selectedKuota ?? res.data[0].id
+                let kuota = selectedKuota ?? res.data[0]?.id
 
-                $("#id_kuota").val(kuota).change()
+                $("#id_kuota").val(kuota)
+
+                let jumlah = $("#id_kuota option:selected").attr("jumlah_kuota")
+
+                $("#kuota_bidang").val(jumlah)
 
             })
 
@@ -409,9 +418,6 @@
         ========================= */
 
         $("#id_periode").change(function() {
-
-            selectedUnit = null
-            selectedKuota = null
 
             updateTanggal()
 
