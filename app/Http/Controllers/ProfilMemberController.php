@@ -104,16 +104,30 @@ class ProfilMemberController extends Controller
     }
 
     function list_priode_pendaftaran_aktif_admin(Request $request) {
-      try {
-        $tgl_sekarang = date('Y-m-d');
-        $data = Periode::whereDate('tgl_selesai_pendaftaran', '>=', $tgl_sekarang)
+    try {
+
+        $tahun_sekarang = date('Y');
+        $tahun_lalu = $tahun_sekarang - 1;
+
+        $data = Periode::whereYear('tgl_mulai_pendaftaran', '>=', $tahun_lalu)
             ->orderBy('tgl_mulai_pendaftaran')
             ->get();
-        return response()->json(["status" => "success", "message" => "sukses", "data" =>$data]);
-      } catch (Exception $e) {
-        return response()->json(["status" => "error", "message" => $e->getMessage()]);
-      } 
-    }
+
+        return response()->json([
+            "status" => "success",
+            "message" => "sukses",
+            "data" => $data
+        ]);
+
+    } catch (Exception $e) {
+
+        return response()->json([
+            "status" => "error",
+            "message" => $e->getMessage()
+        ]);
+
+    } 
+}
 
 
     function list_kuota(Request $request) {
