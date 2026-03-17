@@ -229,15 +229,19 @@ $('.tolak-magang').on('click', function (event) {
 
 $('.delete-confirm-pendaftaran').on('click', function (event) {
     event.preventDefault();
+
     var id = $(this).data('id');
     var url = "/admin/delete-pendaftaran/" + id;
-    swal({
+
+    Swal.fire({
         title: 'Are you sure?',
-        text: 'This record and it`s details will be permanantly deleted!',
+        text: 'This record and its details will be permanently deleted!',
         icon: 'warning',
-        buttons: ["Cancel", "Yes!"],
-    }).then(function (value) {
-        if (value) {
+        showCancelButton: true,
+        confirmButtonText: 'Yes!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
             window.location.href = url;
         }
     });
