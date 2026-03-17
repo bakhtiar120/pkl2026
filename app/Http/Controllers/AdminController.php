@@ -884,7 +884,7 @@ class AdminController extends Controller
     }
 }
 
-  public function update_kuota_pendaftaran(Request $request)
+public function update_kuota_pendaftaran(Request $request)
 {
     $validated = $request->validate([
         'id_periode' => 'required|exists:periode,id',
@@ -903,54 +903,64 @@ class AdminController extends Controller
 
         $idPeriode = $validated['id_periode'];
 
-        // ambil unit yang dikirim frontend
-        $unitIds = collect($validated['data_unit'])
-                    ->pluck('id_unit_bidang')
-                    ->toArray();
-
-        // HAPUS UNIT YANG TIDAK ADA DI REQUEST
-        KuotaPendaftaran::where('id_periode', $idPeriode)
-            ->whereNotIn('id_unit_bidang', $unitIds)
-            ->delete();
-
-        $dataUpsert = [];
+        // ambil semua kuota existing
+        $existing = KuotaPendaftaran::where('id_periode', $idPeriode)
+            ->get()
+            ->keyBy(fn($q) => $q->id_unit_bidang.'-'.$q->id_bidang);
 
         foreach ($validated['data_unit'] as $unit) {
 
             foreach ($unit['bidang'] as $bidang) {
 
-                $dataUpsert[] = [
-                    'id_periode'      => $idPeriode,
-                    'id_unit_bidang'  => $unit['id_unit_bidang'],
-                    'id_bidang'       => $bidang['id_bidang'],
-                    'jumlah_kuota'    => $bidang['kuota_bidang'],
-                ];
+                $key = $unit['id_unit_bidang'].'-'.$bidang['id_bidang'];
+
+                $kuota = $existing->get($key);
+
+                if ($kuota) {
+
+                    // cek jumlah pendaftar
+                    $jumlahPendaftar = DB::table('pendaftaran')
+                        ->where('id_kuota', $kuota->id)
+                        ->count();
+
+                    if ($bidang['kuota_bidang'] < $jumlahPendaftar) {
+                        throw new \Exception(
+                            "Kuota tidak boleh lebih kecil dari jumlah pendaftar ($jumlahPendaftar)"
+                        );
+                    }
+
+                    // update
+                    $kuota->update([
+                        'jumlah_kuota' => $bidang['kuota_bidang']
+                    ]);
+
+                } else {
+
+                    // insert baru
+                    KuotaPendaftaran::create([
+                        'id_periode' => $idPeriode,
+                        'id_unit_bidang' => $unit['id_unit_bidang'],
+                        'id_bidang' => $bidang['id_bidang'],
+                        'jumlah_kuota' => $bidang['kuota_bidang']
+                    ]);
+                }
             }
         }
 
-        KuotaPendaftaran::upsert(
-            $dataUpsert,
-            ['id_periode', 'id_unit_bidang', 'id_bidang'],
-            ['jumlah_kuota']
-        );
-
         DB::commit();
-
-        Alert::success('Congrats', 'Data Kuota Pendaftaran Berhasil Diupdate');
 
         return response()->json([
             "status" => "success",
-            "message" => "Data Kuota Pendaftaran Berhasil Diupdate"
+            "message" => "Kuota berhasil diupdate"
         ]);
 
     } catch (\Exception $e) {
 
         DB::rollBack();
-        Log::error('Update Kuota Error: '.$e->getMessage());
 
         return response()->json([
             "status" => "error",
-            "message" => "Terjadi kesalahan saat mengupdate kuota"
+            "message" => $e->getMessage()
         ], 500);
     }
 }
