@@ -11,6 +11,7 @@ class UnitBidang extends Model
 
     protected $fillable = [
         'name',
+        'status'
     ];
      public function kuota()
     {

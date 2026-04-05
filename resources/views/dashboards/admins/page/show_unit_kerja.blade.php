@@ -30,6 +30,7 @@
                                 <thead>
                                     <tr>
                                         <th>Nama Unit Kerja</th>
+                                        <th>Status</th>
                                         <th>Aksi</th>
                                     </tr>
                                 </thead>
@@ -42,6 +43,8 @@
                                                     <span class="badge badge-pill badge-new">Default</span>
                                                 @endif
                                             </td>
+                                            <td>{{ $unit->status == 1 ? 'Aktif' : 'Tidak Aktif' }}
+                                            </td>
                                             <td>
                                                 <a href="javascript:void(0)"
                                                     class="btn btn-sm btn-outline-success editUnitKerja"
@@ -50,12 +53,20 @@
                                                 </a>
 
                                                 @if ($unit->id != 1)
-                                                    <a href="javascript:void(0)"
-                                                        class="btn btn-sm btn-outline-danger delete-confirm-unit-kerja"
-                                                        data-id="{{ $unit->id }}">
-                                                        <i class="fas fa-trash fa-sm pr-1"></i>Hapus
-                                                    </a>
+                                                    @if ($unit->total_pakai > 0)
+                                                        <button class="btn btn-sm btn-outline-danger" disabled
+                                                            title="Sudah digunakan">
+                                                            <i class="fas fa-trash fa-sm pr-1"></i>Hapus
+                                                        </button>
+                                                    @else
+                                                        <a href="javascript:void(0)"
+                                                            class="btn btn-sm btn-outline-danger delete-confirm-unit-kerja"
+                                                            data-id="{{ $unit->id }}">
+                                                            <i class="fas fa-trash fa-sm pr-1"></i>Hapus
+                                                        </a>
+                                                    @endif
                                                 @endif
+
                                             </td>
                                         </tr>
                                     @endforeach
@@ -81,6 +92,16 @@
                                 <label>Nama Unit Kerja</label>
                                 <input type="text" class="form-control" name="name"
                                     placeholder="Masukkan Nama Unit Kerja" required>
+                            </div>
+                            <div class="form-group mt-3">
+                                <label>Status</label>
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="statusSwitch" name="status"
+                                        value="1" checked>
+                                    <label class="custom-control-label" for="statusSwitch">
+                                        Aktifkan Unit Kerja
+                                    </label>
+                                </div>
                             </div>
                             <div class="form-group mt-3 text-left">
                                 <button type="submit" class="btn btn-primary">

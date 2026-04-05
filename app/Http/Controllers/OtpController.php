@@ -12,6 +12,7 @@ use App\Models\EmailOtp;
 use Illuminate\Support\Facades\Mail as Mail;
 use Illuminate\Mail\Mailable;
 use App\Mail\OtpEmail;
+use Illuminate\Support\Facades\DB;
 // use App\Mail\OtpMail;
 
 class OtpController extends Controller
@@ -39,6 +40,13 @@ public function show()
 
 public function verify(Request $request)
 {
+    \DB::listen(function ($query) {
+    \Log::info('QUERY EXECUTED', [
+        'sql' => $query->sql,
+        'bindings' => $query->bindings,
+        'time' => $query->time
+    ]);
+});
     $request->validate([
         'otp' => 'required|digits:6'
     ]);
@@ -60,8 +68,11 @@ public function verify(Request $request)
     }
 
     if(!Hash::check($request->otp, $otpData->otp)){
-        $otpData->increment('attempts');
-
+        // $otpData->increment('attempts');
+        EmailOtp::where('id', $otpData->id)
+    ->update([
+        'attempts' => DB::raw('attempts + 1')
+    ]);
         return back()->withErrors([
             'otp' => 'Invalid OTP'
         ]);
