@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class EmailOtp extends Model
 {
     use HasFactory;
-
+public $timestamps = false;
     protected $table = 'email_otps';
 
     protected $fillable = [

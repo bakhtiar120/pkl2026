@@ -7,17 +7,22 @@ use Auth;
 use App\Models\UnitBidang;
 use App\Models\KuotaPendaftaran;
 use RealRashid\SweetAlert\Facades\Alert;
+use Illuminate\Support\Facades\DB;
 
 class UnitBidangController extends Controller
 {
      function index()
     {
 
-        $unitkerjas = UnitBidang::latest()->get();
+        $unitkerjas = UnitBidang::select(
+        'unit_bidangs.*',
+        DB::raw('(SELECT COUNT(*) FROM kuota_pendaftaran kp WHERE kp.id_unit_bidang = unit_bidangs.id) as total_pakai')
+    )
+    ->get();
         return view('dashboards.admins.page.show_unit_kerja', compact('unitkerjas'));
     }
 
-    public function store_unit_kerja(Request $request)
+public function store_unit_kerja(Request $request)
 {
     $this->validate($request, [
         'name' => 'required|string|max:155'
@@ -25,6 +30,7 @@ class UnitBidangController extends Controller
 
     $post = UnitBidang::create([
         'name' => $request->name,
+        'status' => $request->input('status', 0), // 🔥 ini tambahan
     ]);
 
     if ($post) {
@@ -50,8 +56,9 @@ public function update_ajax(Request $request, $id)
 
     $data = UnitBidang::find($id);
     $data->update([
-        'name' => $request->name
-    ]);
+    'name' => $request->name,
+    'status' => $request->input('status', 0), // 🔥 ini fixnya
+]);
 
     return response()->json([
         'success' => true

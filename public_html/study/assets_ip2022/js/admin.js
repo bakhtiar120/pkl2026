@@ -118,13 +118,15 @@ $("#update-kuota-pendaftaran").click(function (event) {
 $('.delete-confirm').on('click', function (event) {
     event.preventDefault();
     const url = $("#url_delete").val();
-    swal({
+    Swal.fire({
         title: 'Are you sure?',
         text: 'This record and it`s details will be permanantly deleted!',
         icon: 'warning',
-        buttons: ["Cancel", "Yes!"],
-    }).then(function (value) {
-        if (value) {
+        showCancelButton: true,
+        confirmButtonText: 'Yes!',
+        cancelButtonText: 'Cancel',
+    }).then((result) => {
+        if (result.isConfirmed) {
             window.location.href = url;
         }
     });
@@ -135,13 +137,15 @@ $('.delete-confirm-bidang').on('click', function (event) {
     var id = $(this).data('id');
     var url = "/admin/delete-bidang/" + id;
     // console.log("urlnya ", url)
-    swal({
+    Swal.fire({
         title: 'Are you sure?',
         text: 'This record and it`s details will be permanantly deleted!',
         icon: 'warning',
-        buttons: ["Cancel", "Yes!"],
-    }).then(function (value) {
-        if (value) {
+        showCancelButton: true,
+        confirmButtonText: 'Yes!',
+        cancelButtonText: 'Cancel',
+    }).then((result) => {
+        if (result.isConfirmed) {
             window.location.href = url;
         }
     });
@@ -153,12 +157,14 @@ $('body').on('click', '.editUnitKerja', function () {
     let id = $(this).data('id');
 
     $.get("edit-unit-kerja/" + id, function (data) {
-        // console.log('isi data ', data)
         $('#ajaxUnitKerjaModel').html("Edit Unit Kerja");
         $('#ajax-unit-kerja-model').modal('show');
 
         $('#id').val(data.id);
         $('input[name="name"]').val(data.name);
+
+        // 🔥 set status dari DB
+        $('#statusSwitch').prop('checked', data.status == 1);
     });
 });
 
@@ -167,13 +173,15 @@ $('.delete-confirm-unit-kerja').on('click', function (event) {
     var id = $(this).data('id');
     var url = "/admin/delete-unit-kerja/" + id;
     // console.log("urlnya ", url)
-    swal({
+    Swal.fire({
         title: 'Are you sure?',
         text: 'This record and it`s details will be permanantly deleted!',
         icon: 'warning',
-        buttons: ["Cancel", "Yes!"],
-    }).then(function (value) {
-        if (value) {
+        showCancelButton: true,
+        confirmButtonText: 'Yes!',
+        cancelButtonText: 'Cancel',
+    }).then((result) => {
+        if (result.isConfirmed) {
             window.location.href = url;
         }
     });
@@ -183,13 +191,15 @@ $('.reset-password').on('click', function (event) {
     event.preventDefault();
     var id = $(this).data('id');
     var url = "/admin/reset-password/" + id;
-    swal({
+    Swal.fire({
         title: 'Are you sure?',
         text: 'Password of this user will be reset!',
         icon: 'warning',
-        buttons: ["Cancel", "Yes!"],
-    }).then(function (value) {
-        if (value) {
+        showCancelButton: true,
+        confirmButtonText: 'Yes!',
+        cancelButtonText: 'Cancel',
+    }).then((result) => {
+        if (result.isConfirmed) {
             window.location.href = url;
         }
     });
@@ -199,13 +209,15 @@ $('.terima-magang').on('click', function (event) {
     event.preventDefault();
     var id = $(this).data('id');
     var url = "/admin/terima-magang/" + id;
-    swal({
+    Swal.fire({
         title: 'Apakah kamu yakin?',
         text: 'Peserta ini akan diterima magang!',
         icon: 'warning',
-        buttons: ["Cancel", "Yes!"],
-    }).then(function (value) {
-        if (value) {
+        showCancelButton: true,
+        confirmButtonText: 'Yes!',
+        cancelButtonText: 'Cancel',
+    }).then((result) => {
+        if (result.isConfirmed) {
             window.location.href = url;
         }
     });
@@ -215,13 +227,15 @@ $('.tolak-magang').on('click', function (event) {
     event.preventDefault();
     var id = $(this).data('id');
     var url = "/admin/tolak-magang/" + id;
-    swal({
+    Swal.fire({
         title: 'Apakah kamu yakin?',
         text: 'Peserta ini akan ditolak magang!',
         icon: 'warning',
-        buttons: ["Cancel", "Yes!"],
-    }).then(function (value) {
-        if (value) {
+        showCancelButton: true,
+        confirmButtonText: 'Yes!',
+        cancelButtonText: 'Cancel',
+    }).then((result) => {
+        if (result.isConfirmed) {
             window.location.href = url;
         }
     });
@@ -251,13 +265,15 @@ $('.delete-confirm-mentor').on('click', function (event) {
     event.preventDefault();
     var id = $(this).data('id');
     var url = "/admin/delete-mentor/" + id;
-    swal({
+    Swal.fire({
         title: 'Are you sure?',
-        text: 'This record and it`s details will be permanantly deleted!',
+        text: 'This record and its details will be permanently deleted!',
         icon: 'warning',
-        buttons: ["Cancel", "Yes!"],
-    }).then(function (value) {
-        if (value) {
+        showCancelButton: true,
+        confirmButtonText: 'Yes!',
+        cancelButtonText: 'Cancel',
+    }).then((result) => {
+        if (result.isConfirmed) {
             window.location.href = url;
         }
     });
@@ -267,13 +283,18 @@ $('.delete-confirm-fakultas').on('click', function (event) {
     event.preventDefault();
 
     const url = $(this).attr("href");
-    swal({
+
+    Swal.fire({
         title: 'Are you sure?',
-        text: 'This record and it`s details will be permanantly deleted!',
+        text: 'This record and its details will be permanently deleted!',
         icon: 'warning',
-        buttons: ["Cancel", "Yes!"],
-    }).then(function (value) {
-        delete_fakultas(url);
+        showCancelButton: true,
+        confirmButtonText: 'Yes!',
+        cancelButtonText: 'Cancel',
+    }).then((result) => {
+        if (result.isConfirmed) {
+            delete_fakultas(url);
+        }
     });
 });
 $('input[name="tgl_pelaksanaan"]').daterangepicker({
@@ -634,10 +655,10 @@ function delete_fakultas(url) {
             success: function (response) {
                 // $("#success").html(response.message)
                 if (response.result == 'success') {
-                    swal("Selamat!", response.message, "success");
+                    Swal.fire('Selamat!', response.message, 'success');
                 }
                 else {
-                    swal("Oops!", response.message, "error");
+                    Swal.fire('Oops!', response.message, 'error');
                 }
 
             }
@@ -809,28 +830,31 @@ $('#createNewUnitKerja').click(function () {
     $('#id').val('');
     $('#addEditUnitKerjaForm').trigger("reset");
     $('#ajaxUnitKerjaModel').html("Tambah Unit Kerja");
+    $('#statusSwitch').prop('checked', true);
     $('#ajax-unit-kerja-model').modal('show');
 });
 
-// submit form
+// 🔥 SUBMIT FORM (ANTI BUG STATUS)
 $('#addEditUnitKerjaForm').submit(function (e) {
     e.preventDefault();
 
     let id = $('#id').val();
-    let url = '';
+    let url = id == '' ? "create-unit-kerja" : "update-unit-kerja/" + id;
 
-    if (id == '') {
-        url = "create-unit-kerja";
-    } else {
-        url = "update-unit-kerja/" + id;
-    }
-    let formData = $(this).serialize();
+    let formData = $(this).serializeArray();
+
+    // 🔥 buang status lama (kalau ada)
+    formData = formData.filter(item => item.name !== 'status');
+
+    // 🔥 set status manual (fix utama)
+    let status = $('#statusSwitch').is(':checked') ? 1 : 0;
+    console.log('status ', status)
+    formData.push({ name: 'status', value: status });
 
     $.ajax({
-
         type: "POST",
         url: url,
-        data: formData,
+        data: $.param(formData),
         dataType: 'json',
         success: function (response) {
             if (response.success) {
@@ -838,7 +862,7 @@ $('#addEditUnitKerjaForm').submit(function (e) {
                 location.reload();
             }
         },
-        error: function (error) {
+        error: function () {
             alert('Terjadi kesalahan');
         }
     });

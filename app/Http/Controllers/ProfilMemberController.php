@@ -180,10 +180,14 @@ class ProfilMemberController extends Controller
          'status_pendaftaran'=>'Proses'
        ]); 
 
-       $data2 = Bidang::select('bidang.nama_bidang')
-                            ->leftJoin('kuota_pendaftaran','bidang.id','=','kuota_pendaftaran.id_bidang')
-                            ->where('kuota_pendaftaran.id',$request->id_kuota)
-                            ->first();
+       $data2 = Bidang::select(
+        'bidang.nama_bidang',
+        'unit_bidangs.name as nama_unit_kerja'
+    )
+    ->leftJoin('kuota_pendaftaran','bidang.id','=','kuota_pendaftaran.id_bidang')
+    ->leftJoin('unit_bidangs','unit_bidangs.id','=','kuota_pendaftaran.id_unit_bidang')
+    ->where('kuota_pendaftaran.id',$request->id_kuota)
+    ->first();
 
         return response()->json(["status" => "success", "message" => "sukses", "data" =>$data2,"data1" =>$data]);
       } catch (Exception $e) {

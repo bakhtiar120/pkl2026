@@ -1082,7 +1082,10 @@
                     id_profil: $(`:input[name='id']`).val(),
                 }).done(function(data) {
                     if (data.data) {
-                        $('.nama-bidang').html(data.data.nama_bidang);
+                        $('.nama-bidang').html(
+                            `${data.data.nama_unit_kerja} - ${data.data.nama_bidang}`
+                        );
+
                     }
                 });
             })
