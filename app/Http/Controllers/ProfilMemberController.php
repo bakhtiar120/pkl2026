@@ -161,6 +161,7 @@ class ProfilMemberController extends Controller
                  $data = DB::table('kuota_pendaftaran')
         ->join('unit_bidangs', 'unit_bidangs.id', '=', 'kuota_pendaftaran.id_unit_bidang')
         ->where('kuota_pendaftaran.id_periode', $request->id_periode)
+        ->where('unit_bidangs.status', 1)
         ->select('unit_bidangs.id', 'unit_bidangs.name')
         ->distinct()
         ->get();
