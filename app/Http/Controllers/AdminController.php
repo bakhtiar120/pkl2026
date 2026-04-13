@@ -151,7 +151,7 @@ class AdminController extends Controller
     function buat_pendaftaran()
     {
         $bidangs = Bidang::latest()->get();
-         $unit_bidangs = UnitBidang::latest()->get();
+         $unit_bidangs = UnitBidang::latest()->where('unit_bidangs.status', 1)->get();
         return view('dashboards.admins.page.buat_pendaftaran', compact('bidangs','unit_bidangs'));
     }
     public function edit_kuota_pendaftaran($id)
